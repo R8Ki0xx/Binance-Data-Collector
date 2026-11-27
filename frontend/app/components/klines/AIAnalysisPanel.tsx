@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'

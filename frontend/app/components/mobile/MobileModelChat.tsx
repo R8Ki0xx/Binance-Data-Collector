@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Loader2 } from 'lucide-react'

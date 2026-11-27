@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 from pydantic import BaseModel
 from typing import Dict
 import os

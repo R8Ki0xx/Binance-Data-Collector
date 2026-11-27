@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Hyperliquid Trading Client - Real trading execution with environment isolation
 

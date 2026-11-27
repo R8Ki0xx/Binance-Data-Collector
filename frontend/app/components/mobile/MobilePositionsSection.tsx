@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import { ArenaPositionsAccount } from '@/lib/api'

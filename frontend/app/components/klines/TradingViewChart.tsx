@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useEffect, useRef, useState } from 'react'
 import { createChart, CandlestickSeries, HistogramSeries, LineSeries, AreaSeries, Time } from 'lightweight-charts'
 import PacmanLoader from '../ui/pacman-loader'

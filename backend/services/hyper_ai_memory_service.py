@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Pilot AI Memory Service - User insights and memory management
 

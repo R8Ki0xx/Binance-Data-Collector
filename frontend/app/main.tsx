@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'

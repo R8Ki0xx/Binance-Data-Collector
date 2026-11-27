@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Data provider for Program Trader.
 Connects to existing data services (klines, indicators, flow, regime).

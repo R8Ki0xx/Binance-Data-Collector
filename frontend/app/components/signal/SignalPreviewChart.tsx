@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useEffect, useRef, useState } from 'react'
 import { createChart, CandlestickSeries, CandlestickData, Time, IChartApi, ISeriesApi, createSeriesMarkers, LineSeries, HistogramSeries } from 'lightweight-charts'
 import { formatChartTime } from '../../lib/dateTime'

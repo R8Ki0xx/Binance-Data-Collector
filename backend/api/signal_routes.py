@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """Signal system API routes"""
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * HyperliquidAssetChart - Multi-Account Asset Curve Chart for Hyperliquid Mode
  *

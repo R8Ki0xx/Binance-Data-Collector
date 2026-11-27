@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """Discord Bot Service - Handle Discord bot lifecycle and message routing.
 
 Architecture:

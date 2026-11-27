@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * SplashScreen - Initial loading screen with logo and random tips
  * Waits for both minimum animation duration AND data ready before completing

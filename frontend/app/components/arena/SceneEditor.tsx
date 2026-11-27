@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { OFFICIAL_SCENE_CONFIG, OFFICIAL_SCENE_VERSION } from './officialSceneConfig'
 

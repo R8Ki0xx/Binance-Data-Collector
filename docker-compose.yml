@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 services:
   postgres:
     image: postgres:14
@@ -34,6 +35,10 @@ services:
       # Database connection
       DATABASE_URL: postgresql://alpha_user:alpha_pass@postgres:5432/alpha_arena
       SNAPSHOT_DATABASE_URL: postgresql://alpha_user:alpha_pass@postgres:5432/alpha_snapshots
+      # Optional: your own Hyperliquid builder fee / Binance broker ID (empty = off)
+      HYPERLIQUID_BUILDER_ADDRESS: ${HYPERLIQUID_BUILDER_ADDRESS:-}
+      HYPERLIQUID_BUILDER_FEE: ${HYPERLIQUID_BUILDER_FEE:-30}
+      BINANCE_BROKER_ID: ${BINANCE_BROKER_ID:-}
       # Factor Engine
       FACTOR_ENGINE_ENABLED: "true"
       # Explicitly disable all proxy settings in container

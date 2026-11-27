@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Upgrade Database for Hyperliquid - Smart Approach
 

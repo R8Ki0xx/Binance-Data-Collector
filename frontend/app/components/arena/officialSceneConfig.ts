@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import type { SceneConfig } from './SceneEditor'
 
 export const OFFICIAL_SCENE_VERSION = 4

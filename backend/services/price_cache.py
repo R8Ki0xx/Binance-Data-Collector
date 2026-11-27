@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Price caching service to reduce API calls and provide short-term history.
 """

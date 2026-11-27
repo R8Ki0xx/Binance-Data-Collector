@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * Hyperliquid Wallet Section - One-click wallet setup via browser wallet signing
  *

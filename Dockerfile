@@ -1,10 +1,11 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 # Multi-stage build for QuantPilot
 FROM node:18-alpine AS frontend-builder
 
 # Build frontend
 WORKDIR /app/frontend
 COPY frontend/package.json ./
-RUN npm install -g pnpm && pnpm install
+RUN npm install -g pnpm@8.15.5 && pnpm install
 COPY frontend/ ./
 RUN pnpm build
 

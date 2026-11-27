@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * HyperAiPage - Independent page for Pilot AI (three-column layout)
  * Left: Conversation list

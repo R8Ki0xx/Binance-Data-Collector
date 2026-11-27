@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Telegram Bot Service - Handle Telegram bot lifecycle and message routing.
 

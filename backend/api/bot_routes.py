@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """Bot Integration API Routes - Manage Telegram/Discord bot configurations"""
 import asyncio
 import json

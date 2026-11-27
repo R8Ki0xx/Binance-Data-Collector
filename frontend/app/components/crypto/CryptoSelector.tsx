@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import React, { useEffect, useState } from 'react'
 import { getCryptoSymbols, getPopularCryptos } from '../../lib/api'
 import PriceTicker from './PriceTicker'

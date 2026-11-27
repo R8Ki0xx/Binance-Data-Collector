@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 AI Prompt Generation Service - Handles AI-powered trading prompt generation
 

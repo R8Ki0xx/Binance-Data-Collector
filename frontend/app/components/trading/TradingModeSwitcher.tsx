@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * Trading Mode Switcher Component
  * Allows users to switch between Testnet and Mainnet

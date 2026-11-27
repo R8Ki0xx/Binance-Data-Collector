@@ -14,3 +14,20 @@ Key improvements and modifications made by Heliki AI Community:
 
 For more information, visit: https://www.heliki.com/
 GitHub Repository: https://github.com/HammerGPT/Hyper-Alpha-Arena
+
+---
+
+QuantPilot
+Copyright 2026 QuantPilot contributors
+
+QuantPilot is a modified version of Hyper Alpha Arena (the work described above,
+upstream commit 9bdf62d). It is not affiliated with or endorsed by the original
+authors. Changes made in 2026:
+
+- Fixed the Binance market data collection chain and added tests
+- Added Hyperliquid API rate limiting and related adjustments
+- Made the builder fee and broker ID opt-in and removed membership, login,
+  referral and hosted-service features
+- Renamed the product and redesigned the interface shell with a dark theme
+
+Modified source files carry a notice. The full history is in the git log.

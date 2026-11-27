@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';

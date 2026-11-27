@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Scheduled task scheduler service
 Used to manage WebSocket snapshot updates and other scheduled tasks

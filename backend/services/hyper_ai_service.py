@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Pilot AI Service - Main Agent for Full-Site AI Intelligence
 

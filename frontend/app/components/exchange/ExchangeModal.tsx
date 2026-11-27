@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { X, ExternalLink, Zap, Clock } from 'lucide-react'

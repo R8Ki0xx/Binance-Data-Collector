@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, Check, X, Code, Play, AlertCircle, CheckCircle2, Copy, Sparkles, BookOpen, LineChart } from 'lucide-react'

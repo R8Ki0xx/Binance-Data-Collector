@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """Runtime client for Hyper Insight wallet tracking integration.
 
 This service intentionally keeps a single async connection loop to avoid

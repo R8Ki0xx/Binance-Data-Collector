@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 
 // API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production'

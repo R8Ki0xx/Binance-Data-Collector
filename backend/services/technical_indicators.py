@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 技术指标计算服务
 使用pandas-ta库计算各种技术指标

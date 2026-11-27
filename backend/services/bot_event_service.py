@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """Bot Event Service - System event queue for Bot conversations.
 
 Events (signal triggers, AI decisions) are saved as assistant messages

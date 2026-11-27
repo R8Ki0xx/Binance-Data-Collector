@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 const colors = require('tailwindcss/colors')
 
 /** @type {import('tailwindcss').Config} */

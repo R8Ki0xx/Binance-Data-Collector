@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * HyperAiOnboarding - Full-screen onboarding overlay for Pilot AI setup
  * Step 1: LLM Provider configuration

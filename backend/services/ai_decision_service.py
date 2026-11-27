@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 AI Decision Service - Handles AI model API calls for trading decisions
 """

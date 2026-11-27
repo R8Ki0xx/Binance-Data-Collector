@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 PostgreSQL database initialization script
 Automatically creates databases and tables for QuantPilot

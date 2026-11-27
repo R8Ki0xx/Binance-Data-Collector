@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
   LineChart,

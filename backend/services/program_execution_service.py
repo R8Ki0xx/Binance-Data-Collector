@@ -1,3 +1,4 @@
+# Modified by QuantPilot contributors (2026). See NOTICE.
 """
 Program Trader execution service.
 Handles signal-triggered and scheduled execution of bound programs.

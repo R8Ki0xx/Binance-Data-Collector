@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
