@@ -123,6 +123,15 @@ class FactorComputationService:
             ), {"ex": exchange}).fetchall()
             return [r[0] for r in rows]
 
+    def _period_seconds(self, period: str) -> int:
+        """Convert period string to seconds."""
+        mapping = {
+            "1m": 60, "3m": 180, "5m": 300, "15m": 900,
+            "30m": 1800, "1h": 3600, "2h": 7200, "4h": 14400,
+            "8h": 28800, "12h": 43200, "1d": 86400,
+        }
+        return mapping.get(period, 3600)
+
     def _compute_for_symbol(
         self, db: Session, symbol: str, period: str,
         exchange: str = "hyperliquid",
@@ -130,6 +139,25 @@ class FactorComputationService:
         """Compute all factors for one symbol/period and upsert."""
         klines = ensure_kline_coverage(db, exchange, symbol, period)
         if not klines or len(klines) < 20:
+            logger.warning(
+                "[FactorEngine] SKIP %s/%s/%s: insufficient K-lines (%d < 20). "
+                "API may be unstable.",
+                exchange, symbol, period, len(klines) if klines else 0
+            )
+            return
+
+        # Check data freshness: reject if newest kline is too old
+        newest_ts = klines[-1].get("timestamp", 0)
+        now_ts = int(time.time())
+        period_seconds = self._period_seconds(period)
+        max_age = period_seconds * 4  # allow up to 4x period age
+        age = now_ts - newest_ts
+        if age > max_age and exchange == "hyperliquid":
+            logger.warning(
+                "[FactorEngine] SKIP %s/%s/%s: data is stale (newest kline is %ds old, "
+                "max allowed %ds). API may be down.",
+                exchange, symbol, period, age, max_age
+            )
             return
 
         now_ts = int(klines[-1].get("timestamp", time.time()))

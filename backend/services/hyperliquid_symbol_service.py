@@ -13,12 +13,12 @@ import json
 import logging
 from typing import Dict, List, Optional
 
-import requests
 from sqlalchemy.orm import Session
 
 from database.connection import SessionLocal
 from database.models import SystemConfig, Account
 from services.exchanges.symbol_mapper import SymbolMapper
+from services.hyperliquid_rate_limiter import rate_limited_post
 
 logger = logging.getLogger(__name__)
 
@@ -127,8 +127,7 @@ def fetch_remote_symbols(environment: str = "testnet") -> List[Dict[str, str]]:
     """Call Hyperliquid meta endpoint to retrieve tradable universe."""
     url = META_ENDPOINTS.get(environment, META_ENDPOINTS["testnet"])
     try:
-        resp = requests.post(url, json={"type": "meta"}, timeout=10)
-        resp.raise_for_status()
+        resp = rate_limited_post(url, json={"type": "meta"}, timeout=10, context="fetch_remote_symbols")
         data = resp.json()
         universe = data.get("universe") or data.get("universeSpot") or []
     except Exception as err:
@@ -172,8 +171,7 @@ def fetch_remote_symbols(environment: str = "testnet") -> List[Dict[str, str]]:
     hip3_url = META_ENDPOINTS["mainnet"]
     hip3_count = 0
     try:
-        hip3_resp = requests.post(hip3_url, json={"type": "meta", "dex": "xyz"}, timeout=10)
-        hip3_resp.raise_for_status()
+        hip3_resp = rate_limited_post(hip3_url, json={"type": "meta", "dex": "xyz"}, timeout=10, context="fetch_remote_symbols HIP3")
         hip3_data = hip3_resp.json()
         hip3_universe = hip3_data.get("universe") or []
 

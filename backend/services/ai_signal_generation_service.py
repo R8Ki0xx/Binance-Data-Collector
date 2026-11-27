@@ -15,6 +15,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from services.hyperliquid_rate_limiter import rate_limited_post
 from database.models import AiSignalConversation, AiSignalMessage, Account
 from services.ai_decision_service import build_chat_completion_endpoints, detect_api_format, _extract_text_from_message, get_max_tokens, build_llm_payload, build_llm_headers, extract_reasoning, convert_tools_to_anthropic, convert_messages_to_anthropic, strip_thinking_tags
 from services.signal_backtest_service import signal_backtest_service, TIMEFRAME_MS
@@ -975,7 +976,7 @@ def _tool_get_kline_context(
                     "endTime": max_ts
                 }
             }
-            resp = requests.post(url, json=payload, timeout=10)
+            resp = rate_limited_post(url, json=payload, timeout=10, context="klineSnapshot")
 
         if resp.status_code != 200:
             return {"error": f"Failed to fetch K-lines: HTTP {resp.status_code}"}

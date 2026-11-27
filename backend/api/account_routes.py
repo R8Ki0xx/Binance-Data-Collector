@@ -13,6 +13,7 @@ import time
 
 from database.connection import SessionLocal
 from database.models import Account, Position, Trade, CryptoPrice, AccountAssetSnapshot, HyperliquidWallet, AccountPromptBinding
+from services.hyperliquid_rate_limiter import rate_limited_post, rate_limited_post_urgent
 from services.asset_curve_calculator import invalidate_asset_curve_cache
 from services.ai_decision_service import (
     build_chat_completion_endpoints,
@@ -1206,28 +1207,28 @@ def check_builder_authorization(
         }
     """
     try:
-        import requests
         from config.settings import HYPERLIQUID_BUILDER_CONFIG
 
         # Query Hyperliquid API for max builder fee
-        response = requests.post(
+        response = rate_limited_post_urgent(
             "https://api.hyperliquid.xyz/info",
             json={
                 "type": "maxBuilderFee",
                 "user": wallet_address,
                 "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
             },
-            timeout=10
+            timeout=20,
+            context="maxBuilderFee check auth"
         )
 
-        if response.status_code != 200:
-            logger.error(f"Failed to check builder authorization: HTTP {response.status_code}")
+        max_fee = response.json()
+        if not isinstance(max_fee, (int, float)):
+            logger.error(f"Unexpected maxBuilderFee response type: {type(max_fee)}: {max_fee}")
             raise HTTPException(
                 status_code=500,
-                detail="Failed to query Hyperliquid authorization status"
+                detail="Invalid response from Hyperliquid authorization API"
             )
 
-        max_fee = response.json()  # Returns integer (e.g., 30 for 0.03%)
         required_fee = HYPERLIQUID_BUILDER_CONFIG.builder_fee
 
         return {
@@ -1417,14 +1418,15 @@ def check_mainnet_accounts(
                     eth_account = EthAccount.from_key(decrypted_key)
                     wallet_address = eth_account.address.lower()
 
-                response = requests.post(
+                response = rate_limited_post(
                     "https://api.hyperliquid.xyz/info",
                     json={
                         "type": "maxBuilderFee",
                         "user": wallet_address,
                         "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
                     },
-                    timeout=10
+                    timeout=10,
+                    context="maxBuilderFee check"
                 )
 
                 if response.status_code == 200:
@@ -1482,14 +1484,15 @@ def check_mainnet_accounts(
                 eth_account = EthAccount.from_key(decrypted_key)
                 wallet_address = eth_account.address.lower()
 
-                response = requests.post(
+                response = rate_limited_post(
                     "https://api.hyperliquid.xyz/info",
                     json={
                         "type": "maxBuilderFee",
                         "user": wallet_address,
                         "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
                     },
-                    timeout=10
+                    timeout=10,
+                    context="maxBuilderFee check"
                 )
 
                 if response.status_code == 200:

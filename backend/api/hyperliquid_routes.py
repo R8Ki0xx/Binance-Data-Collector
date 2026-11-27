@@ -19,6 +19,7 @@ import time
 
 from database.connection import get_db
 from database.models import HyperliquidExchangeAction
+from services.hyperliquid_rate_limiter import rate_limited_post, rate_limited_post_urgent
 from services.hyperliquid_environment import (
     setup_hyperliquid_account,
     get_hyperliquid_client,
@@ -960,21 +961,23 @@ def configure_account_wallet(
                 try:
                     print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
                     from config.settings import HYPERLIQUID_BUILDER_CONFIG
-                    import requests
 
                     # Check authorization status
-                    response = requests.post(
+                    response = rate_limited_post_urgent(
                         "https://api.hyperliquid.xyz/info",
                         json={
                             "type": "maxBuilderFee",
                             "user": wallet_address,
                             "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
                         },
-                        timeout=10
+                        timeout=20,
+                        context="maxBuilderFee wallet setup"
                     )
                     max_fee = response.json()
-
-                    if max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
+                    if not isinstance(max_fee, (int, float)):
+                        print(f"[BUILDER_AUTH] Unexpected maxBuilderFee response: {type(max_fee)}: {max_fee}")
+                        requires_auth = True
+                    elif max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
                         print(f"[BUILDER_AUTH] Not authorized (max_fee={max_fee} < required={HYPERLIQUID_BUILDER_CONFIG.builder_fee}), triggering authorization")
 
                         # Execute authorization
@@ -1032,21 +1035,23 @@ def configure_account_wallet(
                 try:
                     print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
                     from config.settings import HYPERLIQUID_BUILDER_CONFIG
-                    import requests
 
                     # Check authorization status
-                    response = requests.post(
+                    response = rate_limited_post_urgent(
                         "https://api.hyperliquid.xyz/info",
                         json={
                             "type": "maxBuilderFee",
                             "user": wallet_address,
                             "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
                         },
-                        timeout=10
+                        timeout=20,
+                        context="maxBuilderFee wallet setup"
                     )
                     max_fee = response.json()
-
-                    if max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
+                    if not isinstance(max_fee, (int, float)):
+                        print(f"[BUILDER_AUTH] Unexpected maxBuilderFee response: {type(max_fee)}: {max_fee}")
+                        requires_auth = True
+                    elif max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
                         print(f"[BUILDER_AUTH] Not authorized (max_fee={max_fee} < required={HYPERLIQUID_BUILDER_CONFIG.builder_fee}), triggering authorization")
 
                         # Execute authorization
@@ -1382,14 +1387,13 @@ class AgentWalletConfigRequest(BaseModel):
 
 def _get_extra_agents(api_url: str, wallet_address: str) -> list:
     """Query Hyperliquid extraAgents API for a wallet address"""
-    import requests
     try:
-        resp = requests.post(
+        resp = rate_limited_post_urgent(
             f"{api_url}/info",
             json={"type": "extraAgents", "user": wallet_address},
-            timeout=10
+            timeout=20,
+            context="extraAgents wallet setup"
         )
-        resp.raise_for_status()
         return resp.json()
     except Exception as e:
         logger.warning(f"Failed to query extraAgents for {wallet_address}: {e}")
@@ -1601,25 +1605,30 @@ def configure_agent_wallet(
         clear_trading_client_cache(account_id=account_id, environment=request.environment)
 
         # Check builder fee authorization for mainnet (using master wallet address)
-        builder_fee_authorized = True
+        builder_fee_authorized = None
         if request.environment == 'mainnet':
             try:
                 from config.settings import HYPERLIQUID_BUILDER_CONFIG
-                import requests as http_requests
-                resp = http_requests.post(
+                resp = rate_limited_post_urgent(
                     "https://api.hyperliquid.xyz/info",
                     json={
                         "type": "maxBuilderFee",
                         "user": master_address,
                         "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
                     },
-                    timeout=10
+                    timeout=20,
+                    context="maxBuilderFee agent wallet setup"
                 )
                 max_fee = resp.json()
-                builder_fee_authorized = max_fee >= HYPERLIQUID_BUILDER_CONFIG.builder_fee
+                if isinstance(max_fee, (int, float)):
+                    builder_fee_authorized = max_fee >= HYPERLIQUID_BUILDER_CONFIG.builder_fee
+                else:
+                    print(f"[BUILDER_AUTH] Unexpected maxBuilderFee response type: {type(max_fee)}: {max_fee}")
+                    builder_fee_authorized = False
                 print(f"[BUILDER_AUTH] Agent wallet bind: master={master_address[:12]}... maxBuilderFee={max_fee}, authorized={builder_fee_authorized}")
             except Exception as e:
                 print(f"[BUILDER_AUTH] Failed to check builder fee for agent wallet: {e}")
+                builder_fee_authorized = False
 
         return {
             "success": True,

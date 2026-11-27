@@ -1642,6 +1642,7 @@ class MarketDataQueryRequest(BaseModel):
     period: str = "1h"
     indicators: Optional[List[str]] = None  # If None, return all
     flow_metrics: Optional[List[str]] = None  # If None, return all
+    exchange: str = "hyperliquid"
 
 
 class MarketDataQueryResponse(BaseModel):
@@ -1701,7 +1702,7 @@ async def query_market_data(
     indicators_result = {}
     for ind in indicators_to_query:
         try:
-            result = calculate_indicator(db, symbol, ind, period, current_time_ms)
+            result = calculate_indicator(db, symbol, ind, period, current_time_ms, exchange=request.exchange)
             # Note: empty dict {} or 0.0 values are valid results
             indicators_result[ind] = result if result is not None else None
         except Exception as e:

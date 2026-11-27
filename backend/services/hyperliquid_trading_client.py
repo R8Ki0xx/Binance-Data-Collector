@@ -43,6 +43,12 @@ from services.hyperliquid_cache import (
     update_account_state_cache,
     update_positions_cache,
 )
+from services.hyperliquid_rate_limiter import (
+    rate_limited_post,
+    _wait_for_rate_limit,
+    _calculate_backoff,
+    MAX_RETRIES,
+)
 from services.exchanges.symbol_mapper import SymbolMapper
 
 getcontext().prec = 28
@@ -173,7 +179,7 @@ class HyperliquidTradingClient:
             self.exchange = ccxt.hyperliquid({
                 'sandbox': (environment == "testnet"),
                 'enableRateLimit': True,
-                'rateLimit': 100,  # 100ms between requests
+                'rateLimit': 150,  # 150ms between requests (reduced from 100ms to avoid 429)
                 'privateKey': private_key,  # Signing key (master or agent)
                 'walletAddress': self.query_address,  # Address for balance/position queries
                 'options': {
@@ -257,6 +263,61 @@ class HyperliquidTradingClient:
 
     def _get_exchange_symbol(self, symbol: str) -> str:
         return SymbolMapper.to_exchange(symbol, "hyperliquid")
+
+    def _sdk_call_with_retry(self, callable_fn, context: str = "SDK call"):
+        """
+        Execute an SDK call with exponential backoff retry on rate limit / connection errors.
+
+        Args:
+            callable_fn: A zero-argument callable that performs the SDK operation
+            context: Description for logging
+
+        Returns:
+            The result of callable_fn
+
+        Raises:
+            The last exception after all retries are exhausted
+        """
+        last_exception = None
+        for attempt in range(MAX_RETRIES + 1):
+            _wait_for_rate_limit()
+            try:
+                return callable_fn()
+            except Exception as e:
+                last_exception = e
+                error_msg = str(e).lower()
+
+                is_retryable = (
+                    '429' in str(e)
+                    or 'rate limit' in error_msg
+                    or 'too many requests' in error_msg
+                    or 'throttled' in error_msg
+                    or '502' in str(e)
+                    or '503' in str(e)
+                    or '504' in str(e)
+                    or 'bad gateway' in error_msg
+                    or 'service unavailable' in error_msg
+                    or 'gateway timeout' in error_msg
+                    or ('connection' in error_msg and 'reset' in error_msg)
+                    or 'connection refused' in error_msg
+                )
+
+                if not is_retryable:
+                    raise
+
+                if attempt < MAX_RETRIES:
+                    delay = _calculate_backoff(attempt)
+                    logger.warning(
+                        f"[RETRY] {context} (attempt {attempt + 1}/{MAX_RETRIES + 1}): {e}. "
+                        f"Backing off {delay:.1f}s"
+                    )
+                    time.sleep(delay)
+                else:
+                    logger.error(
+                        f"[RETRY EXHAUSTED] {context} failed after {MAX_RETRIES + 1} attempts: {e}"
+                    )
+                    raise
+        raise last_exception
 
     def _hip3_trade_error(self, symbol: str) -> Optional[str]:
         if not SymbolMapper.is_hip3_symbol(symbol):
@@ -467,12 +528,12 @@ class HyperliquidTradingClient:
             "unifiedAccount", "portfolioMargin", or "standard"
         """
         try:
-            resp = requests.post(
+            resp = rate_limited_post(
                 f"{self.api_url}/info",
                 json={"type": "userAbstraction", "user": self.query_address},
-                timeout=5,
+                timeout=30,
+                context="userAbstraction",
             )
-            resp.raise_for_status()
             mode = resp.json()
             # API returns a plain string: "unifiedAccount", "disabled", or "portfolioMargin"
             if isinstance(mode, str) and mode in UNIFIED_ACCOUNT_MODES:
@@ -1405,7 +1466,10 @@ class HyperliquidTradingClient:
         try:
             # Set leverage before placing order (if different from current)
             try:
-                result = self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True)
+                result = self._sdk_call_with_retry(
+                    lambda: self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True),
+                    context=f"update_leverage {symbol}"
+                )
                 logger.debug(f"Set leverage to {leverage}x for {symbol}, result: {result}")
                 self._record_exchange_action(
                     action_type="set_leverage",
@@ -1481,7 +1545,10 @@ class HyperliquidTradingClient:
                 if builder_params:
                     sdk_order_params["builder"] = builder_params
 
-                order = self.sdk_exchange.order(**sdk_order_params)
+                order = self._sdk_call_with_retry(
+                    lambda: self.sdk_exchange.order(**sdk_order_params),
+                    context=f"create_order {symbol}"
+                )
                 order_id = None
                 status = "error"
                 error_msg = None
@@ -1751,7 +1818,10 @@ class HyperliquidTradingClient:
             exchange_symbol = self._get_exchange_symbol(symbol)
             logger.info(f"Setting leverage for {symbol} to {leverage}x on {self.environment}")
 
-            result = self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True)
+            result = self._sdk_call_with_retry(
+                lambda: self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True),
+                context=f"set_leverage {symbol}"
+            )
             logger.debug(f"Set leverage result: {result}")
 
             self._record_exchange_action(
@@ -1815,7 +1885,10 @@ class HyperliquidTradingClient:
             logger.info(f"[CANCEL] Cancelling order {order_id} (type={type(order_id).__name__}) for {symbol} on {self.environment}")
 
             # Use SDK to cancel order
-            result = self.sdk_exchange.cancel(exchange_symbol, order_id)
+            result = self._sdk_call_with_retry(
+                lambda: self.sdk_exchange.cancel(exchange_symbol, order_id),
+                context=f"cancel_order {symbol} oid={order_id}"
+            )
             
             logger.info(f"[CANCEL] SDK cancel result: {result}")
             
@@ -2345,7 +2418,10 @@ class HyperliquidTradingClient:
                         if builder_params:
                             tp_order_params["builder"] = builder_params
 
-                        tp_result = self.sdk_exchange.order(**tp_order_params)
+                        tp_result = self._sdk_call_with_retry(
+                            lambda: self.sdk_exchange.order(**tp_order_params),
+                            context=f"tpsl_update TP {symbol}"
+                        )
 
                         if tp_result.get("status") == "ok":
                             result['tp_updated'] = True
@@ -2438,7 +2514,10 @@ class HyperliquidTradingClient:
                         if builder_params:
                             sl_order_params["builder"] = builder_params
 
-                        sl_result = self.sdk_exchange.order(**sl_order_params)
+                        sl_result = self._sdk_call_with_retry(
+                            lambda: self.sdk_exchange.order(**sl_order_params),
+                            context=f"tpsl_update SL {symbol}"
+                        )
 
                         if sl_result.get("status") == "ok":
                             result['sl_updated'] = True
@@ -2603,8 +2682,6 @@ class HyperliquidTradingClient:
         self._validate_environment(db)
 
         try:
-            import requests
-
             # Select API endpoint based on environment
             info_url = f"{self.api_url}/info"
 
@@ -2616,13 +2693,8 @@ class HyperliquidTradingClient:
 
             logger.info(f"Querying rate limit for {self.query_address} on {self.environment}")
 
-            # Call Hyperliquid Info API (disable proxy to avoid connection issues)
-            proxies = {
-                'http': None,
-                'https': None
-            }
-            response = requests.post(info_url, json=payload, timeout=10, proxies=proxies)
-            response.raise_for_status()
+            # Call Hyperliquid Info API with retry on 429
+            response = rate_limited_post(info_url, json=payload, timeout=10, context="userRateLimit")
 
             data = response.json()
 
@@ -2698,8 +2770,7 @@ class HyperliquidTradingClient:
             meta_payload = {"type": "meta"}
             if is_hip3:
                 meta_payload["dex"] = "xyz"
-            response = requests.post(info_url, json=meta_payload, timeout=10, proxies=proxies)
-            response.raise_for_status()
+            response = rate_limited_post(info_url, json=meta_payload, timeout=10, context="assetPrecision meta")
 
             data = response.json()
             universe = data.get('universe', [])
@@ -2714,8 +2785,7 @@ class HyperliquidTradingClient:
             # Fetch order book to infer tick size
             try:
                 l2_payload = {"type": "l2Book", "coin": exchange_symbol}
-                l2_response = requests.post(info_url, json=l2_payload, timeout=10, proxies=proxies)
-                l2_response.raise_for_status()
+                l2_response = rate_limited_post(info_url, json=l2_payload, timeout=10, context="assetPrecision l2Book")
                 l2_data = l2_response.json()
 
                 price_samples: List[Decimal] = []
@@ -3109,7 +3179,10 @@ class HyperliquidTradingClient:
         try:
             # Set leverage before placing order
             try:
-                result = self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True)
+                result = self._sdk_call_with_retry(
+                    lambda: self.sdk_exchange.update_leverage(leverage, exchange_symbol, is_cross=True),
+                    context=f"update_leverage {symbol}"
+                )
                 logger.debug(f"Set leverage to {leverage}x for {symbol}, result: {result}")
                 self._record_exchange_action(
                     action_type="set_leverage",
@@ -3151,7 +3224,10 @@ class HyperliquidTradingClient:
             if builder_params:
                 main_order_params["builder"] = builder_params
 
-            main_result = self.sdk_exchange.order(**main_order_params)
+            main_result = self._sdk_call_with_retry(
+                lambda: self.sdk_exchange.order(**main_order_params),
+                context=f"create_order_with_tpsl {symbol}"
+            )
 
             logger.info(f"[SDK] Main order result: {main_result}")
 
@@ -3248,7 +3324,10 @@ class HyperliquidTradingClient:
                         if builder_params:
                             tp_order_params["builder"] = builder_params
 
-                        tp_result = self.sdk_exchange.order(**tp_order_params)
+                        tp_result = self._sdk_call_with_retry(
+                            lambda: self.sdk_exchange.order(**tp_order_params),
+                            context=f"auto_create_with_tpsl TP {symbol}"
+                        )
 
                         logger.info(f"[SDK] TP order result: {tp_result}")
 
@@ -3300,7 +3379,10 @@ class HyperliquidTradingClient:
                         if builder_params:
                             sl_order_params["builder"] = builder_params
 
-                        sl_result = self.sdk_exchange.order(**sl_order_params)
+                        sl_result = self._sdk_call_with_retry(
+                            lambda: self.sdk_exchange.order(**sl_order_params),
+                            context=f"auto_create_with_tpsl SL {symbol}"
+                        )
 
                         logger.info(f"[SDK] SL order result: {sl_result}")
 

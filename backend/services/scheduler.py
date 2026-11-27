@@ -175,7 +175,7 @@ class TaskScheduler:
                 logger.debug(f"Skipping WebSocket snapshot update for account {account_id} in sync context")
 
                 # Save latest prices for account's positions (less frequently)
-                if start_time.second % 30 == 0:  # Only every 30 seconds
+                if start_time.second % 60 == 0:  # Only every 60 seconds
                     self._save_position_prices(db, account_id)
 
             finally:

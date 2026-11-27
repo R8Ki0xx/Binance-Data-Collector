@@ -264,7 +264,8 @@ def calculate_indicator(
     symbol: str,
     indicator: str,
     period: str,
-    current_time_ms: int
+    current_time_ms: int,
+    exchange: str = "hyperliquid",
 ) -> Optional[Dict[str, Any]]:
     """
     Calculate a single technical indicator for Program Trader.
@@ -275,6 +276,7 @@ def calculate_indicator(
         indicator: Indicator name (e.g., 'RSI14', 'EMA20', 'MACD')
         period: K-line period (e.g., '1h', '4h', '1d')
         current_time_ms: Current timestamp in milliseconds
+        exchange: Exchange name (e.g., 'hyperliquid', 'binance')
 
     Returns:
         Dict with indicator values, or None if calculation fails
@@ -293,7 +295,11 @@ def calculate_indicator(
         # Fetch K-line data from database
         rows = (
             db.query(CryptoKline)
-            .filter(CryptoKline.symbol == symbol, CryptoKline.period == period)
+            .filter(
+                CryptoKline.symbol == symbol,
+                CryptoKline.period == period,
+                CryptoKline.exchange == exchange,
+            )
             .order_by(desc(CryptoKline.timestamp))
             .limit(count)
             .all()
@@ -339,7 +345,7 @@ def calculate_indicator(
         return None
 
     except Exception as e:
-        logger.error(f"Error in calculate_indicator({symbol}, {indicator}, {period}): {e}")
+        logger.error(f"Error in calculate_indicator({symbol}, {indicator}, {period}, {exchange}): {e}")
         return None
 
 

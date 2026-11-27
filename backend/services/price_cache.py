@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class PriceCache:
     """In-memory price cache with TTL and rolling history retention."""
 
-    def __init__(self, ttl_seconds: int = 30, history_seconds: int = 3600):
+    def __init__(self, ttl_seconds: int = 60, history_seconds: int = 3600):
         # key: (symbol, market, environment), value: (price, timestamp)
         self.cache: Dict[Tuple[str, str, str], Tuple[float, float]] = {}
         # key: (symbol, market, environment), deque of (timestamp, price)
@@ -112,7 +112,7 @@ class PriceCache:
 
 
 # Global price cache instance
-price_cache = PriceCache(ttl_seconds=30, history_seconds=3600)
+price_cache = PriceCache(ttl_seconds=60, history_seconds=3600)
 
 
 def get_cached_price(symbol: str, market: str = "CRYPTO", environment: str = "mainnet") -> Optional[float]:

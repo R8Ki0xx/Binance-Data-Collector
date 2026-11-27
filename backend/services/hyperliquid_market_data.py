@@ -6,10 +6,33 @@ import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timezone
 import time
+import threading
 
 from services.exchanges.symbol_mapper import SymbolMapper
+from services.hyperliquid_rate_limiter import rate_limited_post, _wait_for_rate_limit
 
 logger = logging.getLogger(__name__)
+
+# Track K-line fetch freshness per (symbol, period, environment)
+_kline_fetch_tracker: Dict[str, float] = {}
+_kline_fetch_lock = threading.Lock()
+
+def get_kline_cache_age(symbol: str, period: str, environment: str) -> Optional[float]:
+    """Get seconds since last successful K-line fetch for a symbol/period/env."""
+    key = f"{symbol}_{period}_{environment}"
+    with _kline_fetch_lock:
+        last = _kline_fetch_tracker.get(key)
+    if last is None:
+        return None
+    return time.time() - last
+
+def is_kline_data_stale(symbol: str, period: str, environment: str, max_age_multiplier: float = 3.0) -> bool:
+    """Check if cached K-line data is stale."""
+    interval = INTERVAL_SECONDS.get(period, 60)
+    age = get_kline_cache_age(symbol, period, environment)
+    if age is None:
+        return True
+    return age > interval * max_age_multiplier
 
 INTERVAL_SECONDS = {
     '1m': 60,
@@ -43,6 +66,7 @@ class HyperliquidClient:
             self.exchange = ccxt.hyperliquid({
                 'sandbox': sandbox_mode,  # Dynamic based on environment
                 'enableRateLimit': True,
+                'rateLimit': 150,  # 150ms between requests (reduced to avoid 429)
                 'options': {
                     'fetchMarkets': {
                         'types': ['swap'],  # Only load perp markets; skip spot (testnet has inconsistent spot data)
@@ -128,7 +152,6 @@ class HyperliquidClient:
     def get_ticker_data(self, symbol: str) -> Optional[Dict[str, Any]]:
         """Get complete ticker data using Hyperliquid native API"""
         try:
-            import requests
             is_hip3 = SymbolMapper.is_hip3_symbol(symbol)
 
             # Use environment-specific API endpoint
@@ -144,12 +167,12 @@ class HyperliquidClient:
                 payload["dex"] = "xyz"
 
             # Use Hyperliquid native API for complete market data
-            response = requests.post(
+            response = rate_limited_post(
                 api_url,
                 json=payload,
-                timeout=10
+                timeout=10,
+                context=f"metaAndAssetCtxs {symbol}"
             )
-            response.raise_for_status()
             data = response.json()
 
             if not isinstance(data, list) or len(data) < 2:
@@ -293,7 +316,9 @@ class HyperliquidClient:
             return False
 
     def get_kline_data(self, symbol: str, period: str = '1d', count: int = 100, persist: bool = True) -> List[Dict[str, Any]]:
-        """Get kline/candlestick data for a symbol"""
+        """Get kline/candlestick data for a symbol with retry on transient failures"""
+        internal_symbol = symbol.upper()
+
         try:
             if SymbolMapper.is_hip3_symbol(symbol):
                 return self._fetch_kline_native(symbol, period, count, persist)
@@ -305,38 +330,48 @@ class HyperliquidClient:
 
             # Map period to CCXT timeframe (Hyperliquid supported)
             timeframe_map = {
-                '1m': '1m',
-                '3m': '3m',
-                '5m': '5m',
-                '15m': '15m',
-                '30m': '30m',
-                '1h': '1h',
-                '2h': '2h',
-                '4h': '4h',
-                '8h': '8h',
-                '12h': '12h',
-                '1d': '1d',
-                '3d': '3d',
-                '1w': '1w',
-                '1M': '1M',
+                '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m',
+                '1h': '1h', '2h': '2h', '4h': '4h', '8h': '8h', '12h': '12h',
+                '1d': '1d', '3d': '3d', '1w': '1w', '1M': '1M',
             }
             timeframe = timeframe_map.get(period, '1d')
 
-            # Fetch OHLCV data with fallback to spot format
-            try:
-                ohlcv = self.exchange.fetch_ohlcv(formatted_symbol, timeframe, limit=count)
-            except Exception as perp_error:
-                error_msg = str(perp_error).lower()
-                if 'does not have market symbol' in error_msg or 'bad symbol' in error_msg:
-                    if ':USDC' in formatted_symbol:
-                        spot_symbol = formatted_symbol.replace(':USDC', '')
-                        logger.debug(f"Perpetual format failed for {symbol}, retrying with spot format: {spot_symbol}")
-                        ohlcv = self.exchange.fetch_ohlcv(spot_symbol, timeframe, limit=count)
-                        formatted_symbol = spot_symbol  # Update for logging
+            # Fetch with retry on transient errors
+            ohlcv = None
+            last_error = None
+            for attempt in range(3):
+                _wait_for_rate_limit()
+                try:
+                    ohlcv = self.exchange.fetch_ohlcv(formatted_symbol, timeframe, limit=count)
+                    break
+                except Exception as e:
+                    last_error = e
+                    error_msg = str(e).lower()
+                    if 'does not have market symbol' in error_msg or 'bad symbol' in error_msg:
+                        if ':USDC' in formatted_symbol:
+                            spot_symbol = formatted_symbol.replace(':USDC', '')
+                            logger.debug(f"Perpetual format failed for {symbol}, retrying with spot: {spot_symbol}")
+                            try:
+                                ohlcv = self.exchange.fetch_ohlcv(spot_symbol, timeframe, limit=count)
+                                formatted_symbol = spot_symbol
+                                break
+                            except Exception:
+                                raise
+                        else:
+                            raise
+                    elif attempt < 2:
+                        delay = (attempt + 1) * 2.0
+                        logger.warning(
+                            f"[KLINE RETRY] {symbol} {period} attempt {attempt + 1}/3 failed: {e}. "
+                            f"Retrying in {delay}s"
+                        )
+                        time.sleep(delay)
+                        continue
                     else:
                         raise
-                else:
-                    raise
+
+            if ohlcv is None:
+                raise last_error or RuntimeError("Failed to fetch klines")
 
             # Convert to our format
             klines = []
@@ -348,12 +383,11 @@ class HyperliquidClient:
                 close_price = candle[4]
                 volume = candle[5]
 
-                # Calculate change
                 change = close_price - open_price if open_price else 0
                 percent = (change / open_price * 100) if open_price else 0
 
                 klines.append({
-                    'timestamp': int(timestamp_ms / 1000),  # Convert to seconds
+                    'timestamp': int(timestamp_ms / 1000),
                     'datetime': datetime.fromtimestamp(timestamp_ms / 1000, tz=timezone.utc).isoformat(),
                     'open': float(open_price) if open_price else None,
                     'high': float(high_price) if high_price else None,
@@ -365,7 +399,12 @@ class HyperliquidClient:
                     'percent': float(percent),
                 })
 
-            # Auto-persist data to database (边用边存)
+            # Track successful fetch time
+            key = f"{internal_symbol}_{period}_{self.environment}"
+            with _kline_fetch_lock:
+                _kline_fetch_tracker[key] = time.time()
+
+            # Auto-persist data to database
             if persist and klines:
                 try:
                     self._persist_kline_data(symbol, period, klines)
@@ -376,7 +415,11 @@ class HyperliquidClient:
             return klines
 
         except Exception as e:
-            logger.error(f"Error fetching klines for {symbol}: {e}")
+            logger.critical(
+                f"[KLINE FAILURE] Failed to fetch {period} klines for {symbol} "
+                f"(env={self.environment}): {e}",
+                exc_info=True
+            )
             return []
 
     def get_historical_kline_data(self, symbol: str, period: str, since_ms: int, until_ms: int = None) -> List[Dict[str, Any]]:
@@ -470,7 +513,11 @@ class HyperliquidClient:
             return klines
 
         except Exception as e:
-            logger.error(f"Error fetching historical klines for {symbol}: {e}")
+            logger.critical(
+                f"[KLINE FAILURE] Failed to fetch historical {period} klines for {symbol} "
+                f"(env={self.environment}): {e}",
+                exc_info=True
+            )
             return []
 
     def _persist_kline_data(self, symbol: str, period: str, klines: List[Dict[str, Any]]):
@@ -614,7 +661,6 @@ class HyperliquidClient:
         persist: bool = False,
     ) -> List[Dict[str, Any]]:
         """Fetch HIP-3 klines for an explicit time range."""
-        import requests
 
         exchange_symbol = SymbolMapper.to_exchange(symbol, "hyperliquid")
         end_time = until_ms or int(time.time() * 1000)
@@ -629,11 +675,18 @@ class HyperliquidClient:
         }
 
         try:
-            resp = requests.post("https://api.hyperliquid.xyz/info", json=payload, timeout=15)
-            resp.raise_for_status()
+            resp = rate_limited_post(
+                "https://api.hyperliquid.xyz/info",
+                json=payload,
+                timeout=15,
+                context=f"HIP3 klines {symbol}"
+            )
             candles = resp.json()
         except Exception as err:
-            logger.warning("Failed to fetch HIP-3 klines for %s: %s", symbol, err)
+            logger.critical(
+                "[KLINE FAILURE] Failed to fetch HIP-3 klines for %s %s: %s",
+                symbol, period, err, exc_info=True
+            )
             return []
 
         klines: List[Dict[str, Any]] = []

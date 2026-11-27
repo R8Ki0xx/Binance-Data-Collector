@@ -2,11 +2,13 @@
 Data provider for Program Trader.
 Connects to existing data services (klines, indicators, flow, regime).
 """
-
+import logging
 from typing import Dict, List, Any, Optional, Callable
 from sqlalchemy.orm import Session
 
 from .models import Kline, Position, Trade, RegimeInfo, Order
+
+logger = logging.getLogger(__name__)
 
 
 def compute_factor_snapshot(
@@ -68,6 +70,7 @@ def compute_factor_snapshot(
             elif err:
                 result["error"] = err
     except Exception as e:
+        logger.warning("[DataProvider] compute_factor_snapshot failed for %s %s: %s", symbol, factor_name, e)
         result["error"] = str(e)
         return result
 
@@ -163,8 +166,8 @@ class DataProvider:
                     "change_percent": change_pct,
                     "change_usd": change_usd,
                 }
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("[DataProvider] get_price_change failed for %s %s: %s", symbol, period, e)
         self._log_query("get_price_change", {"symbol": symbol, "period": period, "exchange": self.exchange}, result)
         return result
 
@@ -341,8 +344,7 @@ class DataProvider:
                 else:
                     result = {'value': value}
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"get_indicator failed for {symbol} {indicator} {period}: {e}")
+            logger.warning("[DataProvider] get_indicator failed for %s %s %s: %s", symbol, indicator, period, e)
         self._log_query("get_indicator", {"symbol": symbol, "indicator": indicator, "period": period, "exchange": self.exchange}, result)
         return result
 
@@ -366,8 +368,8 @@ class DataProvider:
                 exchange=self.exchange
             )
             result = results.get(metric.upper(), {}) or {}
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("[DataProvider] get_flow failed for %s %s %s: %s", symbol, metric, period, e)
         self._log_query("get_flow", {"symbol": symbol, "metric": metric, "period": period, "exchange": self.exchange}, result)
         return result
 
@@ -395,8 +397,7 @@ class DataProvider:
                     indicators=result.get("indicators", {}),
                 )
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"get_regime failed for {symbol} {period}: {e}")
+            logger.warning("[DataProvider] get_regime failed for %s %s: %s", symbol, period, e)
         self._log_query("get_regime", {"symbol": symbol, "period": period, "exchange": self.exchange}, {
             "regime": regime_info.regime,
             "conf": regime_info.conf,
@@ -429,7 +430,8 @@ class DataProvider:
                 "maintenance_margin": state.get("maintenance_margin", 0.0),
             }
             return self._account_cache
-        except Exception:
+        except Exception as e:
+            logger.warning("[DataProvider] get_account_info failed: %s", e)
             return {
                 "available_balance": 0.0,
                 "total_equity": 0.0,
@@ -473,7 +475,8 @@ class DataProvider:
                 )
             self._positions_cache = positions
             return positions
-        except Exception:
+        except Exception as e:
+            logger.warning("[DataProvider] get_positions failed: %s", e)
             return {}
 
     def get_recent_trades(self, limit: int = 5) -> List[Trade]:
@@ -499,7 +502,8 @@ class DataProvider:
                 ))
             self._recent_trades_cache = trades
             return trades
-        except Exception:
+        except Exception as e:
+            logger.warning("[DataProvider] get_recent_trades failed: %s", e)
             return []
 
     def get_open_orders(self, symbol: Optional[str] = None) -> List[Order]:
@@ -532,7 +536,8 @@ class DataProvider:
             if symbol:
                 return [o for o in orders if o.symbol == symbol]
             return orders
-        except Exception:
+        except Exception as e:
+            logger.warning("[DataProvider] get_open_orders failed: %s", e)
             return []
 
 
@@ -563,6 +568,7 @@ class DataProvider:
                 self._log_query("get_market_data", {"symbol": symbol, "exchange": self.exchange}, result)
                 return result
         except Exception as e:
+            logger.warning("[DataProvider] get_market_data failed for %s: %s", symbol, e)
             self._log_query("get_market_data", {"symbol": symbol, "exchange": self.exchange}, {"error": str(e)})
 
         return {}
