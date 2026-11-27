@@ -79,6 +79,6 @@ uv run python -m unittest discover -s tests
 
 ## 署名与许可
 
-基于 Heliki AI Community 的 [Hyper Alpha Arena](https://github.com/HammerGPT/Hyper-Alpha-Arena) 修改，原项目又基于 etrobot 的 [open-alpha-arena](https://github.com/etrobot/open-alpha-arena)。本仓库保留了完整的 git 历史。
+基于 Heliki AI Community 的 [Hyper Alpha Arena](https://github.com/HammerGPT/Hyper-Alpha-Arena) 修改，原项目又基于 etrobot 的 [open-alpha-arena](https://github.com/etrobot/open-alpha-arena)。本仓库以上游提交 `9bdf62d` 的代码快照为起点，更早的提交记录见上游仓库。
 
 采用 [Apache License 2.0](./LICENSE) 许可，另见 [NOTICE](./NOTICE)。

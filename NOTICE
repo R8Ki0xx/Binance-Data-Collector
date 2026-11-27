@@ -30,4 +30,5 @@ authors. Changes made in 2026:
   referral and hosted-service features
 - Renamed the product and redesigned the interface shell with a dark theme
 
-Modified source files carry a notice. The full history is in the git log.
+Modified source files carry a notice. This repository starts from a snapshot of
+the upstream commit above; the earlier history is in the upstream repository.

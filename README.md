@@ -79,6 +79,6 @@ Data collector health: `GET /api/binance/collector/status`.
 
 ## Attribution
 
-Based on [Hyper Alpha Arena](https://github.com/HammerGPT/Hyper-Alpha-Arena) by the Heliki AI Community, which builds on [open-alpha-arena](https://github.com/etrobot/open-alpha-arena) by etrobot. The git history is preserved.
+Based on [Hyper Alpha Arena](https://github.com/HammerGPT/Hyper-Alpha-Arena) by the Heliki AI Community, which builds on [open-alpha-arena](https://github.com/etrobot/open-alpha-arena) by etrobot. This repository starts from a snapshot of upstream commit `9bdf62d`; the earlier history is in the upstream repository.
 
 Licensed under the [Apache License 2.0](./LICENSE). See [NOTICE](./NOTICE).
