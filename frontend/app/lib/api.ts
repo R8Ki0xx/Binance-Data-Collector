@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie'
 
 // API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production'
@@ -1193,81 +1192,6 @@ export const updateAIAccount = (id: number, account: any) => {
 export const deleteAIAccount = (id: number) => {
   console.warn("deleteAIAccount is deprecated. Use default mode or new trading account APIs.")
   return Promise.resolve()
-}
-
-// Membership interfaces
-export interface MembershipInfo {
-  status: string
-  planKey: string
-  planId?: string
-  subscriptionId?: string
-  environment: string
-  currentPeriodStart?: string
-  currentPeriodEnd?: string
-  nextBillingTime?: string
-  lastPaymentTime?: string
-  updatedAt?: string
-}
-
-export interface MembershipEvent {
-  id: number
-  eventType: string
-  status: string
-  createdAt: string
-  environment: string
-}
-
-export interface MembershipResponse {
-  membership: MembershipInfo | null
-  events?: MembershipEvent[]
-}
-
-// Get membership information from external membership service
-// IMPORTANT: This function supports both same-domain and cross-domain access
-// - Same-domain: Uses cookies automatically
-// - Cross-domain (localhost/custom domains): Uses Authorization header with arena_token
-// This ensures paid users can access membership features regardless of deployment domain
-export async function getMembershipInfo(): Promise<MembershipResponse> {
-  try {
-    // Get arena_token for cross-domain authentication
-    // This is the same Casdoor access token used for login
-    const token = Cookies.get('arena_token')
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-
-    // Add Authorization header if token exists (critical for localhost/custom domain deployments)
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
-    const response = await fetch('https://www.akooi.com/api/membership/me', {
-      method: 'GET',
-      credentials: 'include',  // Still include credentials for same-domain cookie support
-      headers,
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        // User not authenticated or no membership
-        // This can happen if:
-        // 1. User is not logged in to www.akooi.com
-        // 2. Cross-site cookies are blocked (localhost access with old cookies)
-        // 3. Token has expired
-        console.warn('[Membership] 401 Unauthorized - Please re-login at https://www.akooi.com to refresh your session')
-        return { membership: null }
-      }
-      throw new Error(`Failed to fetch membership info: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error('Error fetching membership info:', error)
-    // Return null membership on error to gracefully degrade
-    return { membership: null }
-  }
 }
 
 // Hyperliquid Builder Fee Authorization APIs

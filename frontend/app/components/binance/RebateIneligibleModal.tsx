@@ -5,9 +5,8 @@
  * eligible for API broker rebate (already has referral or registered before broker).
  */
 
-import React from 'react'
 import { createPortal } from 'react-dom'
-import { X, ExternalLink, Crown, UserPlus, Clock } from 'lucide-react'
+import { X, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 
@@ -43,14 +42,6 @@ export default function RebateIneligibleModal({
 
   if (!isOpen) return null
 
-  const handleSubscribe = () => {
-    window.open('https://www.akooi.com/#pricing-section', '_blank')
-  }
-
-  const handleRegisterNew = () => {
-    window.open('https://www.binance.com/en/join?ref=HYPERSVIP', '_blank')
-  }
-
   const handleContinueLimited = () => {
     onConfirmLimited()
     onClose()
@@ -63,7 +54,7 @@ export default function RebateIneligibleModal({
         onClick={onClose}
       />
 
-      <div className="relative bg-background border rounded-lg shadow-lg w-[900px] max-w-[95vw] mx-4 overflow-hidden">
+      <div className="relative bg-background border rounded-lg shadow-lg w-[480px] max-w-[95vw] mx-4 overflow-hidden">
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-1">
@@ -91,69 +82,10 @@ export default function RebateIneligibleModal({
             </p>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'binance.rebateIneligibleOptions',
-              'You can choose one of the following options to continue:'
-            )}
-          </p>
-
-          <div className="grid grid-cols-3 gap-4">
-            {/* Option 1: Subscribe - Recommended */}
-            <button
-              onClick={handleSubscribe}
-              className="p-4 border-2 border-primary rounded-lg hover:bg-primary/5 transition-colors text-left group"
-            >
-              <div className="flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                    <Crown className="h-5 w-5 text-primary" />
-                  </div>
-                  <span className="text-xs px-2 py-0.5 bg-primary text-primary-foreground rounded-full">
-                    {t('common.recommended', 'Recommended')}
-                  </span>
-                </div>
-                <span className="font-semibold">
-                  {t('binance.subscribePremium', 'Subscribe to Premium')}
-                </span>
-                <p className="text-sm text-muted-foreground mt-1 flex-1">
-                  {t('binance.subscribeDescription', 'Unlimited automated trades, unlock all features')}
-                </p>
-                <div className="flex items-center gap-1 text-xs text-primary mt-2">
-                  <ExternalLink className="h-3 w-3" />
-                  <span>akooi.com</span>
-                </div>
-              </div>
-            </button>
-
-            {/* Option 2: Register new account (unverified only) */}
-            <button
-              onClick={handleRegisterNew}
-              className="p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left group"
-            >
-              <div className="flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-muted rounded-lg group-hover:bg-muted/80 transition-colors">
-                    <UserPlus className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                </div>
-                <span className="font-semibold">
-                  {t('binance.registerNew', 'Register New Account')}
-                </span>
-                <p className="text-sm text-muted-foreground mt-1 flex-1">
-                  {t('binance.registerDescription', 'For users who have NOT completed KYC. Unlimited trades + 5% fee rebate.')}
-                </p>
-                <div className="flex items-center gap-1 text-xs text-yellow-600 mt-2">
-                  <ExternalLink className="h-3 w-3" />
-                  <span>binance.com</span>
-                </div>
-              </div>
-            </button>
-
-            {/* Option 3: Continue with limited quota */}
+          <div>
             <button
               onClick={handleContinueLimited}
-              className="p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left group"
+              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left group"
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center gap-2 mb-2">
@@ -165,7 +97,7 @@ export default function RebateIneligibleModal({
                   {t('binance.continueLimited', 'Continue with Limit')}
                 </span>
                 <p className="text-sm text-muted-foreground mt-1 flex-1">
-                  {t('binance.continueLimitedDescription', 'This account is limited to 20 automated trades per day (AI Trader + Program). Subscribe or register with referral for unlimited.')}
+                  {t('binance.continueLimitedDescription', 'This account is limited to 40 automated trades per day (AI Trader + Program).')}
                 </p>
                 <div className="flex items-center gap-1 text-xs text-slate-500 mt-2">
                   <span>{t('binance.continueLimitedButton', 'I understand')}</span>
@@ -174,12 +106,6 @@ export default function RebateIneligibleModal({
             </button>
           </div>
 
-          {/* Footer tip */}
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
-              💡 {t('binance.supportTip', 'Subscribing to Premium or registering through our referral links helps support platform development.')}
-            </p>
-          </div>
         </div>
 
       </div>

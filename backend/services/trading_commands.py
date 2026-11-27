@@ -20,7 +20,6 @@ from database.models import (
     AIDecisionLog,
     ProgramExecutionLog,
     User,
-    UserSubscription,
 )
 from services.asset_calculator import calc_positions_value
 from services.market_data import get_last_price
@@ -40,26 +39,13 @@ from services.hyperliquid_symbol_service import (
 from services.binance_symbol_service import (
     get_selected_symbols as get_binance_selected_symbols,
 )
-from config.settings import BINANCE_DAILY_QUOTA_LIMIT
+from config.settings import BINANCE_BROKER_CONFIG, BINANCE_DAILY_QUOTA_LIMIT
 
 
 logger = logging.getLogger(__name__)
 
 AI_TRADING_SYMBOLS: List[str] = ["BTC"]  # Paper trading deprecated, keep minimal
 ORACLE_PRICE_DEVIATION_LIMIT_PERCENT = 1.0
-
-
-def _is_premium_user(db: Session) -> bool:
-    """Check if there is a premium member currently logged in"""
-    try:
-        subscription = db.query(UserSubscription).join(User).filter(
-            User.username != 'default',
-            UserSubscription.subscription_type == 'premium'
-        ).first()
-        return subscription is not None
-    except Exception as e:
-        logger.warning(f"Failed to check premium status: {e}")
-        return False
 
 
 def _check_binance_daily_quota(db: Session, account_id: int) -> Tuple[bool, Dict[str, int]]:
@@ -69,8 +55,8 @@ def _check_binance_daily_quota(db: Session, account_id: int) -> Tuple[bool, Dict
     Returns:
         Tuple of (exceeded: bool, info: dict with used/limit/remaining)
     """
-    # Check premium status first
-    if _is_premium_user(db):
+    # The quota only applies to deployments that use a broker ID
+    if not BINANCE_BROKER_CONFIG.enabled:
         return False, {"used": 0, "limit": BINANCE_DAILY_QUOTA_LIMIT, "remaining": BINANCE_DAILY_QUOTA_LIMIT}
 
     # Use UTC midnight for quota reset

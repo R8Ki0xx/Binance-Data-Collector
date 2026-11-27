@@ -1209,6 +1209,9 @@ def check_builder_authorization(
     try:
         from config.settings import HYPERLIQUID_BUILDER_CONFIG
 
+        if not HYPERLIQUID_BUILDER_CONFIG.enabled:
+            return {"authorized": True, "max_fee": 0, "required_fee": 0, "builder_address": ""}
+
         # Query Hyperliquid API for max builder fee
         response = rate_limited_post_urgent(
             "https://api.hyperliquid.xyz/info",
@@ -1278,6 +1281,14 @@ def approve_builder_fee(
         print(f"[BUILDER_AUTH] ========== Starting authorization for account_id={account_id} ==========")
         from config.settings import HYPERLIQUID_BUILDER_CONFIG
         from services.hyperliquid_environment import get_hyperliquid_client
+
+        if not HYPERLIQUID_BUILDER_CONFIG.enabled:
+            return {
+                "success": True,
+                "message": "Builder fee is disabled; no authorization needed",
+                "builder_address": "",
+                "approved_fee": "0%"
+            }
 
         # Get account
         account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
@@ -1385,6 +1396,9 @@ def check_mainnet_accounts(
         from config.settings import HYPERLIQUID_BUILDER_CONFIG
         from eth_account import Account as EthAccount
         from services.hyperliquid_environment import decrypt_private_key
+
+        if not HYPERLIQUID_BUILDER_CONFIG.enabled:
+            return {"unauthorized_accounts": []}
 
         unauthorized_accounts = []
         checked_account_ids = set()

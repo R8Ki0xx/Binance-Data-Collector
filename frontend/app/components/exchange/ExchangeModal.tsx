@@ -136,15 +136,6 @@ export default function ExchangeModal({ isOpen, onClose }: ExchangeModalProps) {
                     </div>
                   )}
 
-                  {/* Binance Note */}
-                  {exchange.id === 'binance' && (
-                    <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                        ⚠️ {t('exchange.binanceNote', 'One identity = One account. Register with referral link to get fee discount.')}
-                      </p>
-                    </div>
-                  )}
-
                   {/* Register Button */}
                   <Button
                     variant={exchange.id === 'hyperliquid' ? 'default' : 'outline'}
@@ -159,12 +150,6 @@ export default function ExchangeModal({ isOpen, onClose }: ExchangeModalProps) {
             })}
           </div>
 
-          {/* Footer */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
-              💡 {t('exchange.referralTip', 'Register through our referral links to enjoy fee discounts and support the platform development.')}
-            </p>
-          </div>
         </div>
       </div>
     </div>,

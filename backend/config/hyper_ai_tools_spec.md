@@ -301,30 +301,6 @@ Or for program:
 
 ---
 
-### 1.8 get_contact_config
-
-**Purpose**: Get support channel URLs dynamically.
-
-**Parameters**: None
-
-**Implementation**:
-```python
-# Fetch from external API: https://www.akooi.com/api/config/contact
-# Cache for 1 hour to reduce external calls
-# Fallback to hardcoded defaults if API fails
-```
-
-**Return Value**:
-```json
-{
-  "twitter": {"url": "https://x.com/GptHammer3309", "enabled": true},
-  "telegram": {"url": "https://t.me/+RqxjT7Gttm9hOGEx", "enabled": true},
-  "github": {"url": "https://github.com/HammerGPT/Hyper-Alpha-Arena", "enabled": true}
-}
-```
-
----
-
 ## 2. Diagnostic Tools
 
 ### 2.1 diagnose_trader_issues
@@ -578,7 +554,6 @@ Or for program:
 | P2 | get_market_regime | Low | Reuse DataProvider |
 | P2 | get_market_flow | Low | Reuse DataProvider |
 | P3 | get_system_logs | Medium | Troubleshooting |
-| P3 | get_contact_config | Low | External API call |
 
 ---
 

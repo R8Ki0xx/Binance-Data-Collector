@@ -34,6 +34,7 @@ import type {
 import DataCoverageHeatmap from './DataCoverageHeatmap'
 import ExchangeIcon from '@/components/exchange/ExchangeIcon'
 import { CoinIcon } from '@/components/ui/coin-icon'
+import SamplingDepthCard from './SamplingDepthCard'
 
 interface StorageStats {
   exchange: string
@@ -732,6 +733,8 @@ export default function SettingsPage() {
                 {bnSuccess && <span className="text-green-500 text-xs">{bnSuccess}</span>}
               </CardFooter>
             </Card>
+
+            <SamplingDepthCard />
           </div>
         </TabsContent>
 

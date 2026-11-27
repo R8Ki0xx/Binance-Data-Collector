@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { BarChart3, FileText, NotebookPen, Coins, MessageSquare, Mail, Bot, Ghost, ScrollText, Settings, FlaskConical, Github, ShieldCheck, AlertTriangle } from 'lucide-react'
+import { BarChart3, FileText, NotebookPen, Coins, MessageSquare, Bot, Ghost, ScrollText, Settings, FlaskConical, Github, ShieldCheck, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import ContactDialog from '@/components/contact/ContactDialog'
 import ExchangeModal from '@/components/exchange/ExchangeModal'
 import ExchangeIcon from '@/components/exchange/ExchangeIcon'
 import TradingModeConfirmDialog from '@/components/trading/TradingModeConfirmDialog'
@@ -31,15 +30,6 @@ const KLinesIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 1026 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M59.733333 910.222222V51.2h-56.888889v910.222222h1024V910.222222z"/>
     <path d="M258.844444 620.088889h56.888889v-85.333333h56.888889v-227.555556h-56.888889v-56.888889h-56.888889v56.888889h-56.888888v227.555556h56.888888zM514.844444 790.755556h56.888889v-256h56.888889v-341.333334h-56.888889v-113.777778h-56.888889v113.777778h-56.888888v341.333334h56.888888zM770.844444 705.422222h56.888889v-142.222222h56.888889v-199.111111h-56.888889v-142.222222h-56.888889v142.222222h-56.888888v199.111111h56.888888z"/>
-  </svg>
-)
-
-// Premium icon component (custom SVG)
-const PremiumIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M270.218971 121.212343h483.474286a29.257143 29.257143 0 0 1 23.3472 11.644343l188.416 249.885257a29.257143 29.257143 0 0 1-1.8432 37.419886L533.942857 887.749486a29.257143 29.257143 0 0 1-43.037257 0.058514L60.416 421.595429a29.257143 29.257143 0 0 1-1.930971-37.390629l188.328228-251.260343a29.257143 29.257143 0 0 1 23.405714-11.702857z" fill="#FFA100"/>
-    <path d="M768.292571 121.212343l197.163886 261.558857a29.257143 29.257143 0 0 1-1.8432 37.390629L532.714057 889.066057a11.702857 11.702857 0 0 1-20.304457-7.899428L512 257.024l256.292571-135.840914z" fill="#FFC663"/>
-    <path d="M721.598171 386.340571a29.257143 29.257143 0 0 1 0.994743 1.024l22.7328 23.873829a29.257143 29.257143 0 0 1 0 40.3456l-189.410743 198.890057-22.7328 23.873829a29.257143 29.257143 0 0 1-1.726171 1.667657l1.755429-1.667657a29.4912 29.4912 0 0 1-19.456 9.0112 28.935314 28.935314 0 0 1-18.080915-4.9152 30.193371 30.193371 0 0 1-4.856685-4.096l1.960228 1.872457-0.965486-0.877714-0.994742-0.994743-22.7328-23.873829-189.410743-198.890057a29.257143 29.257143 0 0 1 0-40.374857l22.7328-23.844572a29.257143 29.257143 0 0 1 42.364343 0L512 563.960686l168.228571-176.596115a29.257143 29.257143 0 0 1 41.3696-1.024z" fill="currentColor"/>
   </svg>
 )
 
@@ -109,6 +99,8 @@ const SettingsIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const PROJECT_URL = 'https://github.com/HammerGPT/Hyper-Alpha-Arena'
+
 interface SidebarProps {
   currentPage?: string
   onPageChange?: (page: string) => void
@@ -144,7 +136,6 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
     { label: t('sidebar.factorLibrary', 'Factors'), page: 'factor-library', icon: FlaskConical },
     { label: t('sidebar.manualTrading', 'Manual Trading'), page: 'hyperliquid', icon: Coins },
     { label: t('sidebar.klines', 'K-Lines'), page: 'klines', icon: KLinesIcon },
-    { label: t('sidebar.premium', 'Premium'), page: 'premium-features', icon: PremiumIcon },
     { label: t('sidebar.systemLogs', 'System Logs'), page: 'system-logs', icon: FileText },
   ] as const
 
@@ -260,33 +251,6 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    className="p-2 rounded-md text-muted-foreground hover:text-[#B8860B] hover:bg-muted transition-colors"
-                    onClick={() => window.open('https://www.akooi.com/docs/guide/getting-started.html', '_blank', 'noopener,noreferrer')}
-                  >
-                    <HowToUseIcon className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>{t('sidebar.howToUse', 'How to Use')}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ContactDialog>
-                    <button className="p-2 rounded-md text-muted-foreground hover:text-[#B8860B] hover:bg-muted transition-colors">
-                      <Mail className="w-4 h-4" />
-                    </button>
-                  </ContactDialog>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>{t('contact.contactAuthor', 'Contact Author')}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
                     className={`p-2 rounded-md transition-colors ${
                       currentPage === 'settings'
                         ? 'text-[#B8860B] bg-secondary/80'
@@ -306,7 +270,7 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
                 <TooltipTrigger asChild>
                   <button
                     className="p-2 rounded-md text-muted-foreground hover:text-[#B8860B] hover:bg-muted transition-colors"
-                    onClick={() => window.open('https://github.com/HammerGPT/Hyper-Alpha-Arena', '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(PROJECT_URL, '_blank', 'noopener,noreferrer')}
                   >
                     <Github className="w-4 h-4" />
                   </button>
@@ -318,15 +282,6 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
             </div>
           </TooltipProvider>
           <div className="text-center">
-            <a
-              href="https://www.akooi.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              akooi.com
-            </a>
-            <span className="text-[10px] text-muted-foreground mx-1">·</span>
             <span className="text-[10px] text-muted-foreground">v{__APP_VERSION__}</span>
           </div>
         </div>

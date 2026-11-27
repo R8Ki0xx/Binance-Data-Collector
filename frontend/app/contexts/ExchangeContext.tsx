@@ -72,7 +72,7 @@ export function ExchangeProvider({ children }: ExchangeProviderProps) {
       logo: '/static/hyperliquid_logo.svg',
       description: '#1 Decentralized Perpetual DEX',
       features: ['No KYC Required', 'On-chain Settlement', 'Testnet Available'],
-      referralLink: 'https://app.hyperliquid.xyz/join/HYPERSVIP',
+      referralLink: 'https://app.hyperliquid.xyz',
       buttonText: 'Open Futures',
       buttonVariant: 'default'
     },
@@ -87,8 +87,8 @@ export function ExchangeProvider({ children }: ExchangeProviderProps) {
       logo: '/static/binance_logo.svg',
       description: '#1 Global CEX by Volume',
       features: ['KYC Required', 'High Liquidity', 'Testnet Available'],
-      referralLink: 'https://www.binance.com/en/join?ref=HYPERSVIP',
-      buttonText: 'Register First',
+      referralLink: 'https://www.binance.com/en/futures',
+      buttonText: 'Visit Website',
       buttonVariant: 'outline'
     },
     {
@@ -102,8 +102,8 @@ export function ExchangeProvider({ children }: ExchangeProviderProps) {
       logo: '/static/aster_logo.png',
       description: 'Binance-compatible decentralized exchange',
       features: ['Lower Fees', 'Multi-chain Support', 'API Wallet Security'],
-      referralLink: 'https://www.asterdex.com/zh-CN/referral/2b5924',
-      buttonText: 'Register First',
+      referralLink: 'https://www.asterdex.com',
+      buttonText: 'Visit Website',
       buttonVariant: 'outline'
     }
   ];

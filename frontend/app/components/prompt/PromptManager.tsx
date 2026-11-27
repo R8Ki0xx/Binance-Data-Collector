@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-hot-toast'
-import { ExternalLink } from 'lucide-react'
+import {  } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -19,8 +19,6 @@ import {
   PromptBinding,
   TradingAccount,
 } from '@/lib/api'
-import { STRATEGY_RADAR_URL } from '@/lib/strategyRadar'
-import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -42,7 +40,6 @@ import {
 } from '@/components/ui/dialog'
 import PromptPreviewDialog from './PromptPreviewDialog'
 import AiPromptChatModal from './AiPromptChatModal'
-import PremiumRequiredModal from '@/components/ui/PremiumRequiredModal'
 
 interface BindingFormState {
   id?: number
@@ -107,8 +104,6 @@ export default function PromptManager() {
   // AI Prompt Chat Modal
   const [aiChatModalOpen, setAiChatModalOpen] = useState(false)
 
-  // Premium Modal
-  const [premiumModalOpen, setPremiumModalOpen] = useState(false)
 
   // Variables Reference Modal
   const [variablesRefModalOpen, setVariablesRefModalOpen] = useState(false)
@@ -121,9 +116,6 @@ export default function PromptManager() {
     setVariablesRefContent('')
     setVariablesRefLang('')
   }, [i18n.language])
-
-  // Auth context
-  const { user, membership } = useAuth()
 
   const selectedTemplate = useMemo(
     () => templates.find((tpl) => tpl.id === selectedId) || null,
@@ -384,20 +376,7 @@ export default function PromptManager() {
   }
 
   const handleAiWriteClick = () => {
-    // Check if user is logged in
-    if (!user) {
-      toast.error('Please log in to use this feature')
-      return
-    }
-
-    // Limited Time Free - skip premium check
-    // Open AI generator
     setAiChatModalOpen(true)
-  }
-
-  const handleSubscribe = () => {
-    setPremiumModalOpen(false)
-    window.open('https://www.akooi.com/#pricing-section', '_blank')
   }
 
   const handleOpenVariablesRef = async () => {
@@ -450,12 +429,6 @@ export default function PromptManager() {
                     onClick={handleOpenVariablesRef}
                   >
                     📖 {t('prompt.variablesGuide', 'Variables Guide')}
-                  </Button>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href={STRATEGY_RADAR_URL} target="_blank" rel="noopener noreferrer">
-                      {t('prompt.strategyIdeasLink', 'Need strategy ideas?')}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -810,15 +783,6 @@ export default function PromptManager() {
         }}
         promptId={selectedId}
         promptName={selectedTemplate?.name}
-      />
-
-      {/* Premium Required Modal */}
-      <PremiumRequiredModal
-        isOpen={premiumModalOpen}
-        onClose={() => setPremiumModalOpen(false)}
-        onSubscribe={handleSubscribe}
-        featureName="AI Strategy Prompt Generator"
-        description="Let AI help you write professional trading strategy prompts with natural language conversation."
       />
 
       {/* Variables Reference Modal */}

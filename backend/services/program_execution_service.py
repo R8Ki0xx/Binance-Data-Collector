@@ -34,12 +34,12 @@ from database.connection import SessionLocal
 from database.models import (
     TradingProgram, AccountProgramBinding, ProgramExecutionLog,
     Account, HyperliquidWallet, BinanceWallet, AIDecisionLog,
-    User, UserSubscription
+    User
 )
 from program_trader.executor import execute_strategy
 from program_trader.models import MarketData, ActionType
 from program_trader.data_provider import DataProvider
-from config.settings import BINANCE_DAILY_QUOTA_LIMIT
+from config.settings import BINANCE_BROKER_CONFIG, BINANCE_DAILY_QUOTA_LIMIT
 
 logger = logging.getLogger(__name__)
 
@@ -71,21 +71,9 @@ class ProgramExecutionService:
         self._daily_quota_limit = BINANCE_DAILY_QUOTA_LIMIT
         logger.info("[ProgramExecution] Service initialized")
 
-    def _is_premium_user(self, db) -> bool:
-        """Check if current logged-in user is a premium member"""
-        try:
-            subscription = db.query(UserSubscription).join(User).filter(
-                User.username != 'default',
-                UserSubscription.subscription_type == 'premium'
-            ).first()
-            return subscription is not None
-        except Exception as e:
-            logger.warning(f"Failed to check premium status: {e}")
-            return False
-
     def _check_binance_daily_quota(self, db, account_id: int) -> Tuple[bool, Dict[str, int]]:
         """Check if Binance mainnet daily quota is exceeded."""
-        if self._is_premium_user(db):
+        if not BINANCE_BROKER_CONFIG.enabled:
             return False, {"used": 0, "limit": self._daily_quota_limit, "remaining": self._daily_quota_limit}
 
         # Use UTC midnight for quota reset

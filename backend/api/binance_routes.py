@@ -16,11 +16,11 @@ import logging
 import time
 
 from database.connection import get_db
-from database.models import Account, BinanceWallet, User, UserSubscription, AIDecisionLog, ProgramExecutionLog
+from database.models import Account, BinanceWallet, AIDecisionLog, ProgramExecutionLog
 from utils.encryption import encrypt_private_key, decrypt_private_key
 from services.binance_trading_client import BinanceTradingClient
 from services.hyperliquid_environment import get_global_trading_mode
-from config.settings import BINANCE_DAILY_QUOTA_LIMIT
+from config.settings import BINANCE_BROKER_CONFIG, BINANCE_DAILY_QUOTA_LIMIT
 from utils.runtime_diagnostics import get_current_thread_count, log_hot_path_delta
 
 logger = logging.getLogger(__name__)
@@ -52,19 +52,6 @@ def _clear_client_cache(account_id: int = None, environment: str = None):
         _client_cache.pop(cache_key, None)
     else:
         _client_cache.clear()
-
-
-def _is_premium_user(db: Session) -> bool:
-    """Check if there is a premium member currently logged in"""
-    try:
-        subscription = db.query(UserSubscription).join(User).filter(
-            User.username != 'default',
-            UserSubscription.subscription_type == 'premium'
-        ).first()
-        return subscription is not None
-    except Exception as e:
-        logger.warning(f"Failed to check premium status: {e}")
-        return False
 
 
 # Daily quota uses centralized config
@@ -112,8 +99,8 @@ def setup_wallet(
     Setup Binance Futures wallet for an account.
     Encrypts and stores API credentials.
 
-    For mainnet, checks rebate eligibility first. If not eligible,
-    returns error code 'REBATE_INELIGIBLE' for frontend to show options.
+    When a broker ID is configured, mainnet keys are checked for rebate eligibility
+    and 'REBATE_INELIGIBLE' is returned for the frontend to show options.
     """
     # Verify account exists
     account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
@@ -131,25 +118,21 @@ def setup_wallet(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid credentials: {e}")
 
-    # For mainnet, check rebate eligibility
+    # For mainnet, check rebate eligibility (only meaningful with a broker ID)
     rebate_working = None
-    if request.environment == "mainnet":
+    if request.environment == "mainnet" and BINANCE_BROKER_CONFIG.enabled:
         rebate_info = test_client.check_rebate_eligibility()
         rebate_working = rebate_info.get("rebate_working", False)
 
         if not rebate_info.get("eligible", False):
-            # Check if user is premium - premium users can proceed without rebate
-            is_premium = _is_premium_user(db)
-            if not is_premium:
-                # Return special response for frontend to handle
-                return {
-                    "success": False,
-                    "error_code": "REBATE_INELIGIBLE",
-                    "message": "Account not eligible for API rebate",
-                    "rebate_info": rebate_info,
-                    "environment": request.environment
-                }
-            # Premium user - proceed with binding, rebate_working=False
+            # Return special response for frontend to handle
+            return {
+                "success": False,
+                "error_code": "REBATE_INELIGIBLE",
+                "message": "Account not eligible for API rebate",
+                "rebate_info": rebate_info,
+                "environment": request.environment
+            }
 
     # Encrypt credentials
     api_key_encrypted = encrypt_private_key(request.api_key)
@@ -817,8 +800,8 @@ def get_daily_quota(account_id: int, db: Session = Depends(get_db)):
         _log_request()
         return {"limited": False, "used": 0, "limit": DAILY_QUOTA_LIMIT, "remaining": DAILY_QUOTA_LIMIT}
 
-    # Check premium status
-    if _is_premium_user(db):
+    # No broker configured - there is no quota
+    if not BINANCE_BROKER_CONFIG.enabled:
         _log_request()
         return {"limited": False, "used": 0, "limit": DAILY_QUOTA_LIMIT, "remaining": DAILY_QUOTA_LIMIT}
 

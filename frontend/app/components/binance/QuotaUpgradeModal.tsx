@@ -1,13 +1,12 @@
 /**
- * Quota Upgrade Modal
+ * Quota Modal
  *
- * Shown when a user clicks the quota button to upgrade their account.
- * Two options: Subscribe to Premium or Register New Account.
+ * Shows the remaining daily quota of a Binance mainnet account. The quota only
+ * exists in deployments that configure a Binance broker ID.
  */
 
-import React from 'react'
 import { createPortal } from 'react-dom'
-import { X, ExternalLink, Crown, UserPlus } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 
@@ -43,14 +42,6 @@ export default function QuotaUpgradeModal({
 
   if (!isOpen) return null
 
-  const handleSubscribe = () => {
-    window.open('https://www.akooi.com/#pricing-section', '_blank')
-  }
-
-  const handleRegisterNew = () => {
-    window.open('https://www.binance.com/en/join?ref=HYPERSVIP', '_blank')
-  }
-
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div
@@ -58,12 +49,12 @@ export default function QuotaUpgradeModal({
         onClick={onClose}
       />
 
-      <div className="relative bg-background border rounded-lg shadow-lg w-[600px] max-w-[95vw] mx-4 overflow-hidden">
+      <div className="relative bg-background border rounded-lg shadow-lg w-[480px] max-w-[95vw] mx-4 overflow-hidden">
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-1">
               <BinanceLogo />
-              <span>{t('quota.upgradeTitle', 'Upgrade for Unlimited')}</span>
+              <span>{t('quota.title', 'Daily trade quota')}</span>
             </h2>
             <Button
               variant="ghost"
@@ -89,72 +80,9 @@ export default function QuotaUpgradeModal({
               </p>
             </div>
           )}
-
           <p className="text-sm text-muted-foreground">
-            {t('quota.upgradeOptions', 'Choose an option to unlock unlimited automated trades:')}
+            {t('quota.explanation', 'This account is not eligible for the configured broker rebate, so automated trades are limited per day.')}
           </p>
-
-          <div className="space-y-3">
-            {/* Option 1: Subscribe - Recommended */}
-            <button
-              onClick={handleSubscribe}
-              className="w-full p-4 border-2 border-primary rounded-lg hover:bg-primary/5 transition-colors text-left group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors flex-shrink-0">
-                  <Crown className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">
-                      {t('binance.subscribePremium', 'Subscribe to Premium')}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 bg-primary text-primary-foreground rounded-full">
-                      {t('common.recommended', 'Recommended')}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('binance.subscribeDescription', 'Unlimited automated trades, unlock all features')}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-primary mt-2">
-                    <ExternalLink className="h-3 w-3" />
-                    <span>akooi.com</span>
-                  </div>
-                </div>
-              </div>
-            </button>
-
-            {/* Option 2: Register new account */}
-            <button
-              onClick={handleRegisterNew}
-              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-muted rounded-lg group-hover:bg-muted/80 transition-colors flex-shrink-0">
-                  <UserPlus className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <span className="font-semibold">
-                    {t('binance.registerNew', 'Register New Account')}
-                  </span>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('binance.registerDescription', 'New to Binance? Register with our link for unlimited trades + 5% fee rebate.')}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-yellow-600 mt-2">
-                    <ExternalLink className="h-3 w-3" />
-                    <span>binance.com</span>
-                  </div>
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Footer tip */}
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
-              {t('binance.supportTip', 'Subscribing to Premium or registering through our referral links helps support platform development.')}
-            </p>
-          </div>
         </div>
       </div>
     </div>,

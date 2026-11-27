@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -23,7 +24,8 @@ from database.models import SignalPool, SignalTriggerLog, SystemConfig
 
 logger = logging.getLogger(__name__)
 
-HYPER_INSIGHT_WS_URL = "wss://hyper.akooi.com/ws/events"
+# Wallet tracking needs an external event server; it stays off unless one is configured
+HYPER_INSIGHT_WS_URL = os.getenv("HYPER_INSIGHT_WS_URL", "")
 CONFIG_ENABLED = "hyper_insight_wallet_enabled"
 CONFIG_ACCESS_TOKEN = "hyper_insight_wallet_access_token"
 CONFIG_TOKEN_SYNCED_AT = "hyper_insight_wallet_token_synced_at"

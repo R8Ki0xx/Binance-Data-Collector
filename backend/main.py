@@ -664,7 +664,12 @@ async def restore_discord_gateway():
 async def startup_hyper_insight_wallet_runtime():
     """Start Hyper Insight wallet runtime service."""
     try:
-        from services.hyper_insight_wallet_service import hyper_insight_wallet_service
+        from services.hyper_insight_wallet_service import (
+            HYPER_INSIGHT_WS_URL,
+            hyper_insight_wallet_service,
+        )
+        if not HYPER_INSIGHT_WS_URL:
+            return
         await hyper_insight_wallet_service.startup()
         print("[startup] Hyper Insight wallet runtime initialized")
     except Exception as e:
@@ -806,27 +811,6 @@ async def get_strategy_manager_status():
 from api.ws import websocket_endpoint
 
 app.websocket("/ws")(websocket_endpoint)
-
-# Serve auth config file
-@app.get("/auth-config.json")
-async def serve_auth_config():
-    """Serve the auth configuration file"""
-    static_dir = os.path.join(os.path.dirname(__file__), "static")
-    config_path = os.path.join(static_dir, "auth-config.json")
-
-    if os.path.exists(config_path):
-        return FileResponse(
-            config_path,
-            media_type="application/json",
-            headers={
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
-            }
-        )
-    else:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Auth config not found")
 
 # Serve frontend index.html for root and SPA routes
 @app.get("/")

@@ -190,7 +190,6 @@ TOOL_LABELS = {
     "get_market_flow":        {"en": "Analyzing market flow",       "zh": "正在分析资金流向"},
     "get_system_logs":        {"en": "Reading system logs",         "zh": "正在读取系统日志"},
     "get_api_reference":      {"en": "Loading API reference",       "zh": "正在加载API文档"},
-    "get_contact_config":     {"en": "Loading contact info",        "zh": "正在加载联系方式"},
     "get_trading_environment":{"en": "Getting trading environment", "zh": "正在获取交易环境"},
     "get_watchlist":          {"en": "Getting watchlist",           "zh": "正在获取监控列表"},
     "update_watchlist":       {"en": "Updating watchlist",          "zh": "正在更新监控列表"},

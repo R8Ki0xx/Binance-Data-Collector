@@ -34,7 +34,6 @@ import FactorLibrary from '@/components/factor/FactorLibrary'
 import TraderManagement from '@/components/trader/TraderManagement'
 import { HyperliquidPage } from '@/components/hyperliquid'
 import HyperliquidView from '@/components/hyperliquid/HyperliquidView'
-import PremiumFeaturesView from '@/components/premium/PremiumFeaturesView'
 import KlinesView from '@/components/klines/KlinesView'
 import MobileModelChat from '@/components/mobile/MobileModelChat'
 import MobileDashboard from '@/components/mobile/MobileDashboard'
@@ -49,7 +48,6 @@ import { checkWalletUpgradeNeeded } from '@/lib/hyperliquidApi'
 import { AuthorizationModal, AgentWalletUpgradeModal } from '@/components/hyperliquid'
 import { ArenaDataProvider } from '@/contexts/ArenaDataContext'
 import { TradingModeProvider, useTradingMode } from '@/contexts/TradingModeContext'
-import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ExchangeProvider } from '@/contexts/ExchangeContext'
 
 interface User {
@@ -92,7 +90,6 @@ const PAGE_TITLES: Record<string, string> = {
   'trader-management': 'AI Trader Management',
   'hyperliquid': 'Manual Trading',
   'klines': 'K-Line Charts',
-  'premium-features': 'Premium Features',
   'model-chat': 'Model Chat',
   'settings': 'Settings',
   'arena-assets': 'Arena Assets',
@@ -100,7 +97,6 @@ const PAGE_TITLES: Record<string, string> = {
 
 function App() {
   const { tradingMode } = useTradingMode()
-  const { setUser: setAuthUser } = useAuth()
   const [user, setUser] = useState<User | null>(null)
   const [account, setAccount] = useState<Account | null>(null)
   const [overview, setOverview] = useState<Overview | null>(null)
@@ -169,113 +165,6 @@ function App() {
   useEffect(() => {
     const hash = window.location.hash.slice(1)
     const pathname = window.location.pathname
-
-    // Handle OAuth callback
-    if (pathname === '/callback') {
-      const handleCallback = async () => {
-        try {
-          const urlParams = new URLSearchParams(window.location.search)
-          const sessionParam = urlParams.get('session')
-
-          const { decodeArenaSession, exchangeCodeForToken, getUserInfo } = await import('@/lib/auth')
-          const Cookies = await import('js-cookie')
-
-          if (sessionParam) {
-            const session = decodeArenaSession(sessionParam)
-            if (!session || !session.token.access_token) {
-              console.error('Invalid session payload received')
-              toast.error('Login failed: Invalid session payload')
-              window.location.href = '/'
-              return
-            }
-
-            Cookies.default.set('arena_token', session.token.access_token, { expires: 7 })
-            Cookies.default.set('arena_user', JSON.stringify(session.user), { expires: 7 })
-            setAuthUser(session.user)
-            toast.success('Login successful!')
-            window.location.href = '/'
-            return
-          }
-
-          // Handle direct token parameter (from Casdoor relay)
-          const tokenParam = urlParams.get('token')
-          if (tokenParam) {
-            console.log('[Callback] Received token from relay server, length:', tokenParam.length)
-
-            try {
-              // Fetch user info with the token
-              const userData = await getUserInfo(tokenParam)
-              if (!userData) {
-                console.error('[Callback] Failed to get user information')
-                toast.error('Login failed: Unable to get user information')
-                window.location.href = '/'
-                return
-              }
-
-              // Save token and user data
-              Cookies.default.set('arena_token', tokenParam, { expires: 7 })
-              Cookies.default.set('arena_user', JSON.stringify(userData), { expires: 7 })
-
-              // Save refresh token if provided
-              const refreshTokenParam = urlParams.get('refresh_token')
-              if (refreshTokenParam) {
-                console.log('[Callback] Saving refresh_token to cookie, length:', refreshTokenParam.length)
-                Cookies.default.set('arena_refresh_token', refreshTokenParam, { expires: 30 })
-              }
-
-              setAuthUser(userData)
-              toast.success('Login successful!')
-              window.location.href = '/'
-              return
-            } catch (err) {
-              console.error('[Callback] Error processing token:', err)
-              toast.error('Login failed: Unable to process token')
-              window.location.href = '/'
-              return
-            }
-          }
-
-          const code = urlParams.get('code')
-          const state = urlParams.get('state')
-
-          if (!code) {
-            console.error('No authorization code received')
-            toast.error('Login failed: No authorization code received')
-            window.location.href = '/'
-            return
-          }
-
-          const accessToken = await exchangeCodeForToken(code, state || '')
-          if (!accessToken) {
-            console.error('Failed to get access token')
-            toast.error('Login failed: Unable to get access token')
-            window.location.href = '/'
-            return
-          }
-
-          const userData = await getUserInfo(accessToken)
-          if (!userData) {
-            console.error('Failed to get user information')
-            toast.error('Login failed: Unable to get user information')
-            window.location.href = '/'
-            return
-          }
-
-          Cookies.default.set('arena_token', accessToken, { expires: 7 })
-          Cookies.default.set('arena_user', JSON.stringify(userData), { expires: 7 })
-          setAuthUser(userData)
-          toast.success('Login successful!')
-          window.location.href = '/'
-        } catch (err) {
-          console.error('Callback error:', err)
-          toast.error('Login error occurred')
-          window.location.href = '/'
-        }
-      }
-
-      handleCallback()
-      return
-    }
 
     /**
      * Hash routing with optional parameters: #page-name or #page-name?view=ID
@@ -837,10 +726,6 @@ function App() {
           <KlinesView onAccountUpdated={handleAccountUpdated} />
         )}
 
-        {currentPage === 'premium-features' && (
-          <PremiumFeaturesView onAccountUpdated={handleAccountUpdated} onPageChange={handlePageChange} />
-        )}
-
         {currentPage === 'model-chat' && (
           <MobileModelChat />
         )}
@@ -897,7 +782,6 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
       <ExchangeProvider>
         <TradingModeProvider>
           <ArenaDataProvider>
@@ -906,6 +790,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </ArenaDataProvider>
         </TradingModeProvider>
       </ExchangeProvider>
-    </AuthProvider>
   </React.StrictMode>,
 )

@@ -13,9 +13,13 @@ class MarketConfig(BaseModel):
 
 
 class HyperliquidBuilderConfig(BaseModel):
-    """Hyperliquid Builder Fee Configuration"""
+    """Optional Hyperliquid builder fee charged on mainnet orders (off by default)"""
     builder_address: str
     builder_fee: int  # Fee in tenths of basis point (30 = 0.03%)
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.builder_address) and self.builder_fee > 0
 
 
 #  default configs for CRYPTO markets
@@ -30,13 +34,10 @@ DEFAULT_TRADING_CONFIGS: Dict[str, MarketConfig] = {
     ),
 }
 
-# Hyperliquid Builder Fee Configuration
+# Set HYPERLIQUID_BUILDER_ADDRESS to charge your own builder fee; empty means no fee
 HYPERLIQUID_BUILDER_CONFIG = HyperliquidBuilderConfig(
-    builder_address=os.getenv(
-        "HYPERLIQUID_BUILDER_ADDRESS",
-        "0x012E82f81e506b8f0EF69FF719a6AC65822b5924"
-    ),
-    builder_fee=int(os.getenv("HYPERLIQUID_BUILDER_FEE", "30"))  # 0.03% default
+    builder_address=os.getenv("HYPERLIQUID_BUILDER_ADDRESS", ""),
+    builder_fee=int(os.getenv("HYPERLIQUID_BUILDER_FEE", "30"))  # 0.03% when enabled
 )
 
 
@@ -44,13 +45,17 @@ class BinanceBrokerConfig(BaseModel):
     """Binance Broker Configuration for fee rebates"""
     broker_id: str  # Broker ID for fee rebates
 
+    @property
+    def enabled(self) -> bool:
+        return bool(self.broker_id)
+
 
 # Binance Broker Configuration (optional, for fee rebates)
 BINANCE_BROKER_CONFIG = BinanceBrokerConfig(
     broker_id=os.getenv("BINANCE_BROKER_ID", "")  # Empty if not a broker
 )
 
-# Binance Daily Quota for non-rebate mainnet accounts
+# Binance Daily Quota for non-rebate mainnet accounts (only applied when a broker ID is set)
 # This limits the number of AI-executed trades per day to prevent excessive API usage
 BINANCE_DAILY_QUOTA_LIMIT = 40
 

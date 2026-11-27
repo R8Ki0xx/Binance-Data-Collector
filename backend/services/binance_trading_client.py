@@ -644,9 +644,11 @@ class BinanceTradingClient:
             "side": side.upper(),
             "type": order_type.upper(),
             "quantity": str(rounded_qty),
-            # Add broker ID prefix for commission tracking
-            "newClientOrderId": f"x-{self.broker_id}-{self._get_timestamp()}"
         }
+
+        # Broker ID prefix for commission tracking, only when one is configured
+        if self.broker_id:
+            params["newClientOrderId"] = f"x-{self.broker_id}-{self._get_timestamp()}"
 
         if reduce_only:
             params["reduceOnly"] = "true"

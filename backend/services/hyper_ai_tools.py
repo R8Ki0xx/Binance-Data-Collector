@@ -14,13 +14,11 @@ import json
 import logging
 import os
 from typing import Dict, List, Any, Optional
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
-import requests
 from sqlalchemy.orm import Session
 from sqlalchemy import text, func
 
-from database.models import SystemConfig
 from services.hyper_ai_subagents import SUBAGENT_TOOLS, execute_subagent_tool
 
 logger = logging.getLogger(__name__)
@@ -164,18 +162,6 @@ HYPER_AI_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "get_contact_config",
-            "description": "Get support channel URLs (Twitter, Telegram, GitHub).",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "get_trading_environment",
             "description": "Get current global trading environment (testnet/mainnet). This affects which wallets and data sources are used system-wide.",
             "parameters": {
@@ -231,69 +217,6 @@ HYPER_AI_TOOLS = [
                     "trader_id": {"type": "integer", "description": "AI Trader ID to diagnose"}
                 },
                 "required": ["trader_id"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "analyze_tracked_address",
-            "description": "Get private Hyper Insight address detail for a tracked wallet. Returns factual data for recent activity analysis; recent fills are limited and do not represent the wallet's complete all-time trade history.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "Tracked wallet address to analyze"
-                    }
-                },
-                "required": ["address"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_tracked_wallets",
-            "description": "Get the current Hyper Insight wallet sync status and the tracked wallet addresses currently synced into Hyper Alpha Arena. Use this to see whether Hyper Insight is connected and which wallets are currently available to wallet-tracking signal pools.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_strategy_radar_universe",
-            "description": "Get Strategy Radar's currently supported symbol/period/exchange/regime combinations. Call before searching Strategy Radar so unsupported symbols are not inferred.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_strategy_radar",
-            "description": "Search current Strategy Radar candidates for a supported symbol and period. Results are quality-filtered strategy ideas, not profitability rankings.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "symbol": {"type": "string", "description": "Supported trading symbol from get_strategy_radar_universe, e.g. BTC"},
-                    "period": {"type": "string", "enum": ["1h", "4h", "1d"], "description": "Radar period (default: 1h)"},
-                    "regime": {"type": "string", "description": "Optional requested regime. Omit to use current Radar regime for the symbol/period."},
-                    "exchange": {"type": "string", "enum": ["hyperliquid", "binance"], "description": "Optional exchange filter"},
-                    "strategy_type": {"type": "string", "description": "Optional strategy type filter"},
-                    "sort_by": {"type": "string", "enum": ["relevance", "quality", "newest"], "description": "Optional sort mode. Default is relevance."},
-                    "risk_level": {"type": "string", "enum": ["Low", "Medium", "High"], "description": "Optional risk filter."},
-                    "timeframe": {"type": "string", "enum": ["1h", "4h", "1d", "multi"], "description": "Optional card timeframe filter."},
-                    "limit": {"type": "integer", "description": "Max results (default: 5, max: 10)"}
-                },
-                "required": ["symbol"]
             }
         }
     },
@@ -1284,26 +1207,6 @@ def execute_get_system_logs(db: Session, level: str = "error", limit: int = 20, 
         return json.dumps({"error": str(e)})
 
 
-def execute_get_contact_config() -> str:
-    """Get support channel URLs."""
-    import requests
-
-    try:
-        # Try to fetch from external API
-        resp = requests.get("https://www.akooi.com/api/config/contact", timeout=5)
-        if resp.status_code == 200:
-            return json.dumps(resp.json(), indent=2)
-    except Exception as e:
-        logger.warning(f"[get_contact_config] Failed to fetch from API: {e}")
-
-    # Fallback to defaults
-    return json.dumps({
-        "twitter": {"url": "https://x.com/GptHammer3309", "enabled": True},
-        "telegram": {"url": "https://t.me/+RqxjT7Gttm9hOGEx", "enabled": True},
-        "github": {"url": "https://github.com/HammerGPT/Hyper-Alpha-Arena", "enabled": True}
-    }, indent=2)
-
-
 def execute_get_trading_environment(db: Session) -> str:
     """Get current global trading environment."""
     from services.hyperliquid_environment import get_global_trading_mode
@@ -1980,97 +1883,6 @@ def execute_list_signal_pools(db: Session, pool_id: int = None) -> str:
     except Exception as e:
         logger.error(f"[list_signal_pools] Error: {e}")
         return json.dumps({"error": str(e)})
-
-
-def execute_analyze_tracked_address(db: Session, address: str) -> str:
-    """Fetch protected Hyper Insight address detail for Hyper AI analysis."""
-    from services.hyper_insight_wallet_service import hyper_insight_wallet_service
-
-    normalized = (address or "").strip().lower()
-    if not normalized:
-        return json.dumps({"error": "address is required"})
-
-    snapshot = hyper_insight_wallet_service.get_status_snapshot()
-    synced_addresses = [str(item).strip().lower() for item in (snapshot.get("synced_addresses") or []) if str(item).strip()]
-    synced_set = set(synced_addresses)
-
-    access_token = _get_hyper_insight_access_token(db)
-    if not access_token:
-        return json.dumps({
-            "error": "Please log in to Hyper Alpha Arena before using Hyper Insight analysis.",
-            "next_steps": [
-                "Log in to Hyper Alpha Arena with your linked account first.",
-                "After login, open Signals > Wallet Tracking and make sure your tracked wallets have synced before asking for wallet analysis."
-            ]
-        }, ensure_ascii=False)
-
-    if snapshot.get("status") != "connected":
-        return json.dumps({
-            "error": "Wallet Tracking is not connected yet in Hyper Alpha Arena.",
-            "next_steps": [
-                "Open Hyper Alpha Arena and use the left sidebar to enter Signals > Wallet Tracking.",
-                "Enable sync and wait until the connection status becomes connected before requesting wallet analysis."
-            ]
-        }, ensure_ascii=False)
-
-    if normalized not in synced_set:
-        return json.dumps({
-            "error": "This wallet is not currently in your synced wallet list.",
-            "next_steps": [
-                "Track the wallet on https://hyper.akooi.com/ if it is not already tracked there.",
-                "Then return to Hyper Alpha Arena > Signals > Wallet Tracking and wait until the wallet appears in the synced wallet list."
-            ]
-        }, ensure_ascii=False)
-
-    base_url = os.getenv("HYPER_INSIGHT_API_BASE_URL", "https://hyper.akooi.com").rstrip("/")
-    url = f"{base_url}/api/s2s/addresses/{normalized}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-    }
-
-    try:
-        response = requests.get(url, headers=headers, timeout=15)
-        if response.status_code == 404:
-            return json.dumps({
-                "error": "This wallet is temporarily unavailable for detailed analysis right now.",
-                "next_steps": [
-                    "Wallet Tracking is already connected and the wallet is already in your synced list.",
-                    "This means the current failure is system-side rather than a wallet tracking problem. Please retry later."
-                ]
-            }, ensure_ascii=False)
-        if response.status_code == 401:
-            return json.dumps({
-                "error": "Your Hyper Insight session in Hyper Alpha Arena is no longer valid.",
-                "next_steps": [
-                    "Refresh Hyper Alpha Arena, open Signals > Wallet Tracking, and enable sync again.",
-                    "After the tracked wallet list is visible again, retry the wallet analysis request."
-                ]
-            }, ensure_ascii=False)
-        if response.status_code == 403:
-            return json.dumps({
-                "error": "Tracked wallet analysis is temporarily unavailable right now.",
-                "next_steps": [
-                    "Wallet Tracking is connected and the wallet is already in your synced list.",
-                    "This means the current failure is system-side rather than a wallet tracking problem. Please retry later."
-                ]
-            }, ensure_ascii=False)
-        response.raise_for_status()
-        payload = response.json()
-        if isinstance(payload, dict):
-            payload.setdefault(
-                "analysis_limit_note",
-                "Recent fills are limited to the latest window and do not represent the address's complete all-time trade history.",
-            )
-        return json.dumps(payload, indent=2, ensure_ascii=False)
-    except requests.RequestException as exc:
-        logger.error("[analyze_tracked_address] Error fetching %s: %s", normalized, exc)
-        return json.dumps({
-            "error": "Failed to fetch Hyper Insight address detail right now.",
-            "next_steps": [
-                "If Wallet Tracking is connected and the wallet is already in your synced list, then the current failure is system-side.",
-                "Please retry later."
-            ]
-        }, ensure_ascii=False)
 
 
 def execute_list_strategies(db: Session, strategy_id: int = None, strategy_type: str = None) -> str:
@@ -3060,240 +2872,6 @@ def execute_fetch_url(url: str, max_length: int = 8000) -> str:
     })
 
 
-def execute_get_tracked_wallets(db: Session) -> str:
-    """Return the current Hyper Insight sync state and synced tracked wallets."""
-    from services.hyper_insight_wallet_service import hyper_insight_wallet_service
-
-    snapshot = hyper_insight_wallet_service.get_status_snapshot()
-    synced_addresses = snapshot.get("synced_addresses") or []
-    result = {
-        "connected": snapshot.get("status") == "connected",
-        "status": snapshot.get("status"),
-        "tier": snapshot.get("tier"),
-        "tracked_wallet_count": len(synced_addresses),
-        "tracked_wallets": synced_addresses,
-        "last_connected_at": snapshot.get("last_connected_at"),
-        "last_event_at": snapshot.get("last_event_at"),
-        "last_error": snapshot.get("last_error"),
-        "usage_note": "This list reflects the wallets currently synced from Hyper Insight into Hyper Alpha Arena. It is the correct source for what Hyper AI can currently inspect in this Arena session.",
-    }
-    return json.dumps(result, indent=2, ensure_ascii=False)
-
-
-_STRATEGY_RADAR_UNIVERSE_CACHE: dict[str, Any] = {"expires_at": None, "payload": None}
-
-
-def _get_hyper_insight_access_token(db: Session) -> str:
-    token_row = db.query(SystemConfig).filter(SystemConfig.key == "hyper_insight_wallet_access_token").first()
-    return ((token_row.value if token_row else "") or "").strip()
-
-
-def _strategy_radar_headers(db: Session) -> dict[str, str] | None:
-    access_token = _get_hyper_insight_access_token(db)
-    if not access_token:
-        return None
-    return {"Authorization": f"Bearer {access_token}"}
-
-
-def _strategy_radar_base_url() -> str:
-    return os.getenv("HYPER_INSIGHT_API_BASE_URL", "https://hyper.akooi.com").rstrip("/")
-
-
-def _fetch_strategy_radar_universe(db: Session, *, force_refresh: bool = False) -> dict:
-    now = datetime.now(timezone.utc)
-    cached_until = _STRATEGY_RADAR_UNIVERSE_CACHE.get("expires_at")
-    cached_payload = _STRATEGY_RADAR_UNIVERSE_CACHE.get("payload")
-    if (
-        not force_refresh
-        and cached_payload is not None
-        and isinstance(cached_until, datetime)
-        and cached_until > now
-    ):
-        return cached_payload
-
-    headers = _strategy_radar_headers(db)
-    if headers is None:
-        return {
-            "ok": False,
-            "error": "Please log in to Hyper Alpha Arena before using Strategy Radar with Hyper AI.",
-            "reason": "missing_login_token",
-            "next_steps": [
-                "Log in to Hyper Alpha Arena with your linked account first.",
-                "After login, ask Hyper AI to search Strategy Radar again.",
-            ],
-        }
-
-    url = f"{_strategy_radar_base_url()}/api/s2s/strategy-radar/universe"
-    response = requests.get(url, headers=headers, timeout=10)
-    if response.status_code == 401:
-        return {
-            "ok": False,
-            "error": "Your Hyper Insight login in Hyper Alpha Arena is no longer valid.",
-            "reason": "upstream_401",
-            "next_steps": [
-                "Log in to Hyper Alpha Arena again.",
-                "After login, ask Hyper AI to search Strategy Radar again.",
-            ],
-        }
-    if response.status_code in {403, 503}:
-        return {
-            "ok": False,
-            "error": "Strategy Radar lookup is temporarily unavailable right now.",
-            "reason": f"upstream_{response.status_code}",
-        }
-    response.raise_for_status()
-    payload = response.json()
-    if isinstance(payload, dict):
-        payload["ok"] = True
-        _STRATEGY_RADAR_UNIVERSE_CACHE["payload"] = payload
-        _STRATEGY_RADAR_UNIVERSE_CACHE["expires_at"] = now + timedelta(minutes=10)
-        return payload
-    return {"ok": False, "error": "Strategy Radar returned an invalid universe response."}
-
-
-def execute_get_strategy_radar_universe(db: Session) -> str:
-    """Return Strategy Radar's currently queryable symbol/period/regime combinations."""
-    try:
-        payload = _fetch_strategy_radar_universe(db)
-        return json.dumps(payload, indent=2, ensure_ascii=False)
-    except requests.RequestException as exc:
-        logger.error("[strategy_radar_universe] Error: %s", exc)
-        return json.dumps({
-            "ok": False,
-            "error": "Failed to fetch Strategy Radar supported symbols right now.",
-        }, ensure_ascii=False)
-
-
-def _universe_supports(universe: dict, *, symbol: str, period: str, exchange: str | None) -> tuple[bool, dict | None]:
-    for item in universe.get("symbols") or []:
-        if str(item.get("symbol", "")).upper() != symbol:
-            continue
-        for period_item in item.get("periods") or []:
-            if period_item.get("period") != period:
-                continue
-            if exchange and period_item.get("exchange") != exchange:
-                continue
-            return True, period_item
-        return False, None
-    return False, None
-
-
-def execute_search_strategy_radar(
-    db: Session,
-    *,
-    symbol: str,
-    period: str = "1h",
-    regime: str | None = None,
-    exchange: str | None = None,
-    strategy_type: str | None = None,
-    sort_by: str | None = None,
-    risk_level: str | None = None,
-    timeframe: str | None = None,
-    limit: int = 5,
-) -> str:
-    """Search protected Strategy Radar S2S endpoints for current strategy candidates."""
-    safe_symbol = (symbol or "").strip().upper()
-    safe_period = period if period in {"1h", "4h", "1d"} else "1h"
-    safe_exchange = exchange if exchange in {"hyperliquid", "binance"} else None
-    safe_sort_by = sort_by if sort_by in {"relevance", "quality", "newest"} else None
-    safe_risk_level = risk_level if risk_level in {"Low", "Medium", "High"} else None
-    safe_timeframe = timeframe if timeframe in {"1h", "4h", "1d", "multi"} else None
-    safe_limit = max(1, min(int(limit or 5), 10))
-
-    if not safe_symbol:
-        return json.dumps({"ok": False, "error": "symbol is required"}, ensure_ascii=False)
-
-    universe = _fetch_strategy_radar_universe(db)
-    if not universe.get("ok"):
-        return json.dumps(universe, ensure_ascii=False)
-
-    supported, period_item = _universe_supports(
-        universe,
-        symbol=safe_symbol,
-        period=safe_period,
-        exchange=safe_exchange,
-    )
-    if not supported:
-        return json.dumps({
-            "ok": False,
-            "reason": "unsupported_symbol_period",
-            "symbol": safe_symbol,
-            "period": safe_period,
-            "exchange": safe_exchange,
-            "supported_symbols": [
-                item.get("symbol") for item in (universe.get("symbols") or []) if item.get("symbol")
-            ],
-            "usage_note": "Only combinations returned by get_strategy_radar_universe are supported.",
-        }, ensure_ascii=False)
-
-    headers = _strategy_radar_headers(db)
-    if headers is None:
-        return json.dumps({
-            "ok": False,
-            "error": "Please log in to Hyper Alpha Arena before using Strategy Radar with Hyper AI.",
-            "next_steps": [
-                "Log in to Hyper Alpha Arena with your linked account first.",
-                "After login, ask Hyper AI to search Strategy Radar again.",
-            ],
-        }, ensure_ascii=False)
-
-    params = {
-        "symbol": safe_symbol,
-        "period": safe_period,
-        "limit": safe_limit,
-    }
-    if regime:
-        params["regime"] = regime
-    if safe_exchange:
-        params["exchange"] = safe_exchange
-    if strategy_type:
-        params["strategy_type"] = strategy_type
-    if safe_sort_by:
-        params["sort_by"] = safe_sort_by
-    if safe_risk_level:
-        params["risk_level"] = safe_risk_level
-    if safe_timeframe:
-        params["timeframe"] = safe_timeframe
-
-    try:
-        response = requests.get(
-            f"{_strategy_radar_base_url()}/api/s2s/strategy-radar/search",
-            headers=headers,
-            params=params,
-            timeout=12,
-        )
-        if response.status_code == 401:
-            return json.dumps({
-                "ok": False,
-                "error": "Your Hyper Insight login in Hyper Alpha Arena is no longer valid.",
-                "reason": "upstream_401",
-                "next_steps": [
-                    "Log in to Hyper Alpha Arena again.",
-                    "After login, ask Hyper AI to search Strategy Radar again.",
-                ],
-            }, ensure_ascii=False)
-        if response.status_code in {403, 503}:
-            return json.dumps({
-                "ok": False,
-                "error": "Strategy Radar lookup is temporarily unavailable right now.",
-                "reason": f"upstream_{response.status_code}",
-            }, ensure_ascii=False)
-        if response.status_code == 429:
-            return json.dumps({
-                "ok": False,
-                "error": "Strategy Radar is rate limited right now. Please retry later.",
-            }, ensure_ascii=False)
-        response.raise_for_status()
-        payload = response.json()
-        return json.dumps(payload, indent=2, ensure_ascii=False)
-    except requests.RequestException as exc:
-        logger.error("[search_strategy_radar] Error: %s", exc)
-        return json.dumps({
-            "ok": False,
-            "error": "Failed to fetch Strategy Radar candidates right now.",
-        }, ensure_ascii=False)
-
-
 def execute_hyper_ai_tool(
     db: Session, tool_name: str, arguments: Dict[str, Any],
     user_id: int = 1, api_config: Optional[Dict[str, Any]] = None
@@ -3350,9 +2928,6 @@ def execute_hyper_ai_tool(
                 trader_id=arguments.get("trader_id")
             )
 
-        elif tool_name == "get_contact_config":
-            return execute_get_contact_config()
-
         elif tool_name == "get_trading_environment":
             return execute_get_trading_environment(db)
 
@@ -3368,32 +2943,6 @@ def execute_hyper_ai_tool(
 
         elif tool_name == "diagnose_trader_issues":
             return execute_diagnose_trader_issues(db, trader_id=arguments.get("trader_id"))
-
-        elif tool_name == "analyze_tracked_address":
-            return execute_analyze_tracked_address(
-                db,
-                address=arguments.get("address", ""),
-            )
-
-        elif tool_name == "get_tracked_wallets":
-            return execute_get_tracked_wallets(db)
-
-        elif tool_name == "get_strategy_radar_universe":
-            return execute_get_strategy_radar_universe(db)
-
-        elif tool_name == "search_strategy_radar":
-            return execute_search_strategy_radar(
-                db,
-                symbol=arguments.get("symbol", ""),
-                period=arguments.get("period", "1h"),
-                regime=arguments.get("regime"),
-                exchange=arguments.get("exchange"),
-                strategy_type=arguments.get("strategy_type"),
-                sort_by=arguments.get("sort_by"),
-                risk_level=arguments.get("risk_level"),
-                timeframe=arguments.get("timeframe"),
-                limit=arguments.get("limit", 5),
-            )
 
         elif tool_name == "save_signal_pool":
             return execute_save_signal_pool(

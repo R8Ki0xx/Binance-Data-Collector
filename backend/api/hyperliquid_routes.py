@@ -957,10 +957,10 @@ def configure_account_wallet(
 
             # Builder binding for mainnet wallet after successful save
             requires_auth = False
-            if request.environment == 'mainnet':
+            from config.settings import HYPERLIQUID_BUILDER_CONFIG
+            if request.environment == 'mainnet' and HYPERLIQUID_BUILDER_CONFIG.enabled:
                 try:
                     print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
-                    from config.settings import HYPERLIQUID_BUILDER_CONFIG
 
                     # Check authorization status
                     response = rate_limited_post_urgent(
@@ -1031,10 +1031,10 @@ def configure_account_wallet(
 
             # Builder binding for mainnet wallet after successful save
             requires_auth = False
-            if request.environment == 'mainnet':
+            from config.settings import HYPERLIQUID_BUILDER_CONFIG
+            if request.environment == 'mainnet' and HYPERLIQUID_BUILDER_CONFIG.enabled:
                 try:
                     print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
-                    from config.settings import HYPERLIQUID_BUILDER_CONFIG
 
                     # Check authorization status
                     response = rate_limited_post_urgent(
@@ -1606,9 +1606,9 @@ def configure_agent_wallet(
 
         # Check builder fee authorization for mainnet (using master wallet address)
         builder_fee_authorized = None
-        if request.environment == 'mainnet':
+        from config.settings import HYPERLIQUID_BUILDER_CONFIG
+        if request.environment == 'mainnet' and HYPERLIQUID_BUILDER_CONFIG.enabled:
             try:
-                from config.settings import HYPERLIQUID_BUILDER_CONFIG
                 resp = rate_limited_post_urgent(
                     "https://api.hyperliquid.xyz/info",
                     json={

@@ -183,7 +183,6 @@ class HyperliquidTradingClient:
                 'privateKey': private_key,  # Signing key (master or agent)
                 'walletAddress': self.query_address,  # Address for balance/position queries
                 'options': {
-                    'ref': 'HYPERSVIP',
                     'builderFee': False,
                     'fetchMarkets': {
                         'hip3': {
@@ -388,47 +387,20 @@ class HyperliquidTradingClient:
         """
         Get builder fee parameters for orders.
 
-        Only returns builder params for mainnet environment to avoid
-        unnecessary fees on testnet trading.
-
-        Fee rates:
-        - Premium users: 0 (0% - FREE)
-        - Non-premium users: 30 (0.03%)
+        Builder fees apply to mainnet only, and only when the operator has
+        configured a builder address.
 
         Returns:
-            Dict with builder address and fee rate for mainnet, None for testnet
-            Format: {"b": "0x...", "f": 0 or 30} or None
+            {"b": address, "f": fee} or None
         """
-        # Only apply builder fee on mainnet, not on testnet
-        if self.environment != "mainnet":
-            return None
-
         from config.settings import HYPERLIQUID_BUILDER_CONFIG
-        from database.models import User, UserSubscription
 
-        # Determine fee based on current logged-in user's subscription status
-        # Query non-default user's subscription (the current logged-in user)
-        builder_fee = HYPERLIQUID_BUILDER_CONFIG.builder_fee  # Default: 30
-
-        try:
-            db = SessionLocal()
-            subscription = db.query(UserSubscription).join(User).filter(
-                User.username != 'default',
-                UserSubscription.subscription_type == 'premium'
-            ).first()
-            if subscription:
-                builder_fee = 0  # Premium rate: 0% (FREE)
-                user = db.query(User).filter(User.id == subscription.user_id).first()
-                logger.info(f"[BUILDER FEE] Premium user '{user.username if user else 'unknown'}' detected, using FREE fee: 0%")
-            else:
-                logger.info(f"[BUILDER FEE] No premium user logged in, using default fee: 0.03%")
-            db.close()
-        except Exception as e:
-            logger.warning(f"[BUILDER FEE] Failed to check subscription status: {e}, using default fee")
+        if self.environment != "mainnet" or not HYPERLIQUID_BUILDER_CONFIG.enabled:
+            return None
 
         return {
             "b": HYPERLIQUID_BUILDER_CONFIG.builder_address,
-            "f": builder_fee
+            "f": HYPERLIQUID_BUILDER_CONFIG.builder_fee
         }
 
     def _record_exchange_action(
