@@ -1,7 +1,7 @@
 # Binance Data Collector
 
 [![tests](https://github.com/R8Ki0xx/Binance-Data-Collector/actions/workflows/tests.yml/badge.svg)](https://github.com/R8Ki0xx/Binance-Data-Collector/actions/workflows/tests.yml)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
 一个命令行工具，用来批量下载 Binance 的历史 K 线数据，并保存成可以直接用 Excel 或 Pandas 分析的 CSV 文件。
@@ -22,7 +22,7 @@
 
 ## 安装
 
-需要 Python 3.9 及以上。
+需要 Python 3.10 及以上。
 
 ```bash
 git clone https://github.com/R8Ki0xx/Binance-Data-Collector.git
