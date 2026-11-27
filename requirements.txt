@@ -1,0 +1,4 @@
+requests>=2.28
+pandas>=1.5
+tqdm>=4.60
+tzdata; sys_platform == "win32"
