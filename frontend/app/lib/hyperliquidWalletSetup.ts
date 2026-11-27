@@ -1,3 +1,4 @@
+// Modified by QuantPilot contributors (2026). See NOTICE.
 /**
  * Hyperliquid One-Click Wallet Setup
  *
@@ -41,11 +42,6 @@ const EIP712_DOMAIN_TYPE = [
   { name: 'chainId', type: 'uint256' },
   { name: 'verifyingContract', type: 'address' },
 ]
-
-// Builder fee config
-const BUILDER_ADDRESS = '0x012E82f81e506b8f0EF69FF719a6AC65822b5924'
-const BUILDER_FEE_RATE = '0.03%' // 30 internal units = 3 bps = 0.03%
-const BUILDER_FEE_THRESHOLD = 30
 
 const MAINNET_API = 'https://api.hyperliquid.xyz'
 const TESTNET_API = 'https://api.hyperliquid-testnet.xyz'
@@ -246,6 +242,18 @@ const APPROVE_AGENT_TYPES = [
   { name: 'nonce', type: 'uint64' },
 ]
 
+/** Builder fee status as configured on the backend (no fee unless the operator set one). */
+async function getBuilderStatus(masterAddress: string) {
+  const resp = await fetch(
+    `/api/account/hyperliquid/check-builder-authorization?wallet_address=${encodeURIComponent(masterAddress)}`,
+  )
+  return parseJsonResponse(resp, 'Check builder fee') as Promise<{
+    authorized: boolean
+    required_fee: number // tenths of a basis point
+    builder_address: string // empty when no builder fee is configured
+  }>
+}
+
 /**
  * Check if builder fee is already authorized for a wallet address
  */
@@ -255,17 +263,7 @@ export async function checkBuilderFeeAuthorized(
 ): Promise<boolean> {
   if (env === 'testnet') return true
   try {
-    const resp = await fetch(`${MAINNET_API}/info`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'maxBuilderFee',
-        user: masterAddress,
-        builder: BUILDER_ADDRESS,
-      }),
-    })
-    const maxFee = await parseJsonResponse(resp, 'Check builder fee')
-    return maxFee >= BUILDER_FEE_THRESHOLD
+    return (await getBuilderStatus(masterAddress)).authorized
   } catch {
     return false
   }
@@ -278,12 +276,16 @@ export async function approveBuilderFee(
   masterAddress: string,
   env: 'testnet' | 'mainnet'
 ): Promise<void> {
+  const { builder_address: builder, required_fee: requiredFee } = await getBuilderStatus(masterAddress)
+  if (!builder) return // No builder fee configured: nothing to sign
+
+  const maxFeeRate = `${requiredFee / 1000}%`
   const nonce = Date.now()
 
   const messageValues = {
     hyperliquidChain: getChainName(env),
-    maxFeeRate: BUILDER_FEE_RATE,
-    builder: BUILDER_ADDRESS,
+    maxFeeRate,
+    builder,
     nonce,
   }
 
@@ -299,8 +301,8 @@ export async function approveBuilderFee(
   const action = {
     type: 'approveBuilderFee',
     hyperliquidChain: getChainName(env),
-    maxFeeRate: BUILDER_FEE_RATE,
-    builder: BUILDER_ADDRESS,
+    maxFeeRate,
+    builder,
     nonce,
     signatureChainId: SIGNING_CHAIN_ID,
   }
