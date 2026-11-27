@@ -128,7 +128,7 @@ export default function TraderDataImportDialog({
         onChange={handleFileSelect}
       />
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded text-sm">
           {error}
         </div>
       )}
@@ -162,7 +162,7 @@ export default function TraderDataImportDialog({
           )}
         </div>
       )}
-      <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded text-sm">
+      <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 px-4 py-3 rounded text-sm">
         <AlertTriangle className="h-4 w-4 inline mr-2" />
         {t('traderData.importWarning')}
       </div>

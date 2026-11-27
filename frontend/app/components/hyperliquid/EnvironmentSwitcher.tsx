@@ -151,11 +151,11 @@ export default function EnvironmentSwitcher({
         <div className="space-y-6 py-4">
           {/* Warning for Mainnet */}
           {isMainnetSwitch && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg">
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-red-900">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-300">
                     WARNING: Mainnet uses REAL MONEY
                   </p>
                   <p className="text-xs text-red-700">

@@ -101,14 +101,14 @@ export default function WalletSelector({
 
   if (wallets.length === 0) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-medium text-yellow-900 text-sm">
+            <h3 className="font-medium text-yellow-900 dark:text-yellow-300 text-sm">
               {t('trade.noWalletsAvailable', 'No Wallets Available')}
             </h3>
-            <p className="text-xs text-yellow-800 mt-1">
+            <p className="text-xs text-yellow-800 dark:text-yellow-300 mt-1">
               {t('trade.noWalletsHint', 'Please configure wallets for your AI Traders first.')}
             </p>
           </div>

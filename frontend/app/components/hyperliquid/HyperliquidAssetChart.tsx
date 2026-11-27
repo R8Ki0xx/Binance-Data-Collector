@@ -613,7 +613,7 @@ export default function HyperliquidAssetChart({
     <Card className="h-full">
       <div className="h-full relative">
         {/* Time Range Selector */}
-        <div className="absolute top-3 right-3 z-10 flex gap-1 bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-gray-200">
+        <div className="absolute top-3 right-3 z-10 flex gap-1 bg-card/90 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-border">
           {[
             { value: '7d' as const, label: '7D' },
             { value: '15d' as const, label: '15D' },
@@ -627,7 +627,7 @@ export default function HyperliquidAssetChart({
               className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
                 timeRange === option.value
                   ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  : 'text-gray-600 hover:bg-muted'
               }`}
             >
               {option.label}
@@ -661,8 +661,9 @@ export default function HyperliquidAssetChart({
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'rgba(255,255,255,0.95)',
-                border: '1px solid #e0e0e0',
+                backgroundColor: 'hsl(var(--popover))',
+                border: '1px solid hsl(var(--border))',
+                color: 'hsl(var(--popover-foreground))',
                 borderRadius: '8px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
@@ -750,14 +751,14 @@ export default function HyperliquidAssetChart({
         {/* Trade marker tooltip */}
         {hoveredTrade && (
           <div
-            className="absolute pointer-events-none bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs z-20"
+            className="absolute pointer-events-none bg-card border border-border rounded-lg shadow-lg px-3 py-2 text-xs z-20"
             style={{
               left: hoveredTrade.x + 15,
               top: hoveredTrade.y - 40,
               transform: 'translateX(-50%)'
             }}
           >
-            <div className="font-bold text-gray-800">
+            <div className="font-bold text-foreground">
               {hoveredTrade.side} {hoveredTrade.symbol}
             </div>
             {hoveredTrade.price != null && (

@@ -188,7 +188,9 @@
     "myAccount": "我的账户",
     "login": "登录",
     "signOut": "退出登录",
-    "signUp": "注册"
+    "signUp": "注册",
+    "useLightTheme": "切换到浅色模式",
+    "useDarkTheme": "切换到深色模式"
   },
   "auth": {
     "login": "登录",
@@ -833,7 +835,14 @@
     "showLast": "显示最近",
     "noData": "无数据",
     "noDataCollected": "尚未采集数据",
-    "bot": "机器人"
+    "bot": "机器人",
+    "samplingDepth": "采样深度",
+    "samplingDepthDesc": "提供给 AI 交易员的近期价格点数，约覆盖 {{minutes}} 分钟。",
+    "samplingSaved": "已保存采样深度",
+    "samplingSaveFailed": "采样深度保存失败，请稍后重试。",
+    "samplingLoadFailed": "采样配置读取失败，请刷新页面重试。",
+    "save": "保存",
+    "saving": "正在保存……"
   },
   "marketRegime": {
     "title": "市场状态",
@@ -1060,9 +1069,7 @@
     "saving": "保存中...",
     "saveChanges": "保存更改",
     "proTip": "小贴士",
-    "referralTip": "通过我们的推荐链接注册，享受手续费折扣并支持平台发展。",
     "dataCollection": "数据采集",
-    "binanceNote": "一个身份 = 一个账户。通过推荐链接注册可享手续费折扣。",
     "hyperliquid": {
       "description": "最大的去中心化永续合约交易所",
       "feature1": "无需 KYC",
@@ -1075,7 +1082,7 @@
       "feature1": "需要 KYC",
       "feature2": "高流动性",
       "feature3": "支持测试网",
-      "button": "先注册"
+      "button": "访问官网"
     },
     "data": {
       "kline": "K线",
@@ -1714,7 +1721,7 @@
     "registerNew": "注册新账户",
     "registerDescription": "币安新用户？通过推荐链接注册，无限次交易 + 5% 返佣。",
     "continueLimited": "继续使用（有限制）",
-    "continueLimitedDescription": "当前账户每日限 40 次自动交易（含 AI Trader 和 Program）。如需更多，请订阅或注册返佣账户。",
+    "continueLimitedDescription": "此账户每天最多自动交易 40 次（AI 交易员与程序合计）。",
     "continueLimitedButton": "我知道了",
     "supportTip": "订阅会员或通过推荐链接注册，可以更好地支持平台发展。团队发展不易，望请理解。",
     "rebateNote": "仅未绑定推荐关系的账户可用于 AI 交易",
@@ -1728,7 +1735,9 @@
     "currentUsage": "当前使用",
     "perDay": "每天",
     "upgradeOptions": "选择以下选项解锁无限次自动交易：",
-    "resetAt": "重置时间"
+    "resetAt": "重置时间",
+    "title": "每日交易额度",
+    "explanation": "此账户不符合当前经纪商返佣条件，每日自动交易次数有限。"
   },
   "hyperAi": {
     "title": "Pilot AI",
@@ -1783,9 +1792,7 @@
     "defaultSuggestions": {
       "intro": "介绍一下你能帮我做什么",
       "setup": "带我完成初始设置",
-      "first": "我想创建第一个交易策略",
-      "strategyRadar": "帮我从 Strategy Radar 找策略思路",
-      "walletSignals": "如何接入 Hyper Insight 钱包信号？"
+      "first": "我想创建第一个交易策略"
     },
     "connecting": "连接中...",
     "calling": "正在调用",
@@ -2036,5 +2043,16 @@
     "hyperAI": {
       "tooltip": "与 Pilot AI 对话"
     }
+  },
+  "nav": {
+    "overview": "总览",
+    "strategy": "策略",
+    "markets": "市场与交易",
+    "system": "分析与系统",
+    "main": "主导航",
+    "expand": "展开侧边栏",
+    "collapse": "收起侧边栏",
+    "modelChat": "模型对话",
+    "arenaAssets": "场景素材"
   }
 }

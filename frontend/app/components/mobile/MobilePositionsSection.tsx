@@ -47,7 +47,7 @@ export default function PositionsSection({ positions, selectedAccount, loading }
                       <span className="text-xs text-muted-foreground">{pos.account_name}</span>
                     )}
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                      isLong ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      isLong ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700' : 'bg-red-100 dark:bg-red-950/40 text-red-700'
                     }`}>
                       {isLong ? 'LONG' : 'SHORT'}
                     </span>

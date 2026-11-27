@@ -543,10 +543,10 @@ export default function AssetCurve({
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e5e5',
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--popover-foreground))',
                       borderRadius: '6px',
-                      color: '#333333',
                       fontSize: '12px'
                     }}
                     formatter={(value: any, name: string) => [

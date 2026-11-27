@@ -93,9 +93,9 @@ export default function TradesSection({
 function TradeCard({ trade, selectedAccount }: { trade: ArenaTrade; selectedAccount: number | 'all' }) {
   const { t } = useTranslation()
   const logo = selectedAccount === 'all' ? getModelLogo(trade.account_name) : null
-  const sideStyle = trade.side === 'BUY' ? 'bg-emerald-100 text-emerald-700'
-    : trade.side === 'SELL' ? 'bg-red-100 text-red-700'
-    : trade.side === 'CLOSE' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+  const sideStyle = trade.side === 'BUY' ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700'
+    : trade.side === 'SELL' ? 'bg-red-100 dark:bg-red-950/40 text-red-700'
+    : trade.side === 'CLOSE' ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-700' : 'bg-muted text-foreground'
 
   return (
     <div className="border rounded bg-muted/30 p-2.5 space-y-1.5">
@@ -137,7 +137,7 @@ function TradeCard({ trade, selectedAccount }: { trade: ArenaTrade; selectedAcco
       </div>
       {(trade.signal_trigger_id || trade.prompt_template_name) && (
         <div className="flex items-center gap-2 text-[10px]">
-          <span className={`px-1.5 py-0.5 rounded ${trade.signal_trigger_id ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'}`}>
+          <span className={`px-1.5 py-0.5 rounded ${trade.signal_trigger_id ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700' : 'bg-muted text-slate-600'}`}>
             {trade.signal_trigger_id ? t('feed.signalPoolTrigger', 'Signal Pool') : t('feed.scheduledTrigger', 'Scheduled')}
           </span>
           {trade.prompt_template_name && <span className="px-1.5 py-0.5 rounded bg-muted">{trade.prompt_template_name}</span>}
@@ -156,7 +156,7 @@ function RelatedOrders({ orders }: { orders: ArenaTrade['related_orders'] }) {
       <span className="text-[10px] text-muted-foreground">{t('feed.relatedOrders', 'Related Orders')}</span>
       {orders.map((ro, idx) => (
         <div key={idx} className="flex items-center gap-2 text-[10px] bg-muted/50 rounded px-2 py-1">
-          <span className={`px-1 py-0.5 rounded font-bold ${ro.type === 'sl' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+          <span className={`px-1 py-0.5 rounded font-bold ${ro.type === 'sl' ? 'bg-red-100 dark:bg-red-950/40 text-red-700' : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700'}`}>
             {ro.type === 'sl' ? 'SL' : 'TP'}
           </span>
           <span>@ ${ro.price?.toFixed(2)}</span>

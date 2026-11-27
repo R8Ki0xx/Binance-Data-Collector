@@ -75,11 +75,11 @@ export default function MobileModelChat() {
 
   const getOperationStyle = (operation?: string) => {
     const op = (operation || '').toUpperCase()
-    if (op === 'BUY') return 'bg-emerald-100 text-emerald-800'
-    if (op === 'SELL') return 'bg-red-100 text-red-800'
-    if (op === 'CLOSE') return 'bg-blue-100 text-blue-800'
-    if (op === 'HOLD') return 'bg-gray-200 text-gray-800'
-    return 'bg-orange-100 text-orange-800'
+    if (op === 'BUY') return 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
+    if (op === 'SELL') return 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300'
+    if (op === 'CLOSE') return 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300'
+    if (op === 'HOLD') return 'bg-muted text-foreground'
+    return 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300'
   }
 
   // Detail view for full content
@@ -171,7 +171,7 @@ export default function MobileModelChat() {
                     </span>
                     {entry.symbol && <span className="font-semibold">{entry.symbol}</span>}
                     <span className={`px-2 py-0.5 rounded text-[10px] ${
-                      entry.signal_trigger_id ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'
+                      entry.signal_trigger_id ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700' : 'bg-muted text-slate-600'
                     }`}>
                       {entry.signal_trigger_id ? t('feed.signalPoolTrigger', 'Signal Pool') : t('feed.scheduledTrigger', 'Scheduled')}
                     </span>

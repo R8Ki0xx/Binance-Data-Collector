@@ -735,7 +735,7 @@ Trade #${tradeData.trade.id} ${tradeData.trade.symbol}:
                       </div>
                     </details>
                   )}
-                  <div className={`text-sm prose prose-sm max-w-none ${
+                  <div className={`text-sm prose prose-sm dark:prose-invert max-w-none ${
                     msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert'
                   } [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted [&_td]:border [&_td]:border-border [&_td]:p-2`}>
                     {msg.content ? (

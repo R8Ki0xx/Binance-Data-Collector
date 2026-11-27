@@ -185,7 +185,9 @@
     "myAccount": "My Account",
     "login": "Login",
     "signOut": "Sign Out",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "useLightTheme": "Switch to light theme",
+    "useDarkTheme": "Switch to dark theme"
   },
   "auth": {
     "login": "Login",
@@ -920,7 +922,14 @@
     "showLast": "Show last",
     "noData": "No data available",
     "noDataCollected": "No data collected yet",
-    "bot": "Bot"
+    "bot": "Bot",
+    "samplingDepth": "Sampling pool depth",
+    "samplingDepthDesc": "Recent price points given to the AI trader. Covers about {{minutes}} minutes.",
+    "samplingSaved": "Sampling depth saved",
+    "samplingSaveFailed": "Failed to save sampling depth. Try again.",
+    "samplingLoadFailed": "Failed to load sampling settings. Refresh the page.",
+    "save": "Save",
+    "saving": "Saving..."
   },
   "marketRegime": {
     "title": "Market Regime",
@@ -1040,9 +1049,7 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "proTip": "Pro Tip",
-    "referralTip": "Register through our referral links to enjoy fee discounts and support the platform development.",
     "dataCollection": "Data Collection",
-    "binanceNote": "One identity = One account. Register with referral link to get fee discount.",
     "hyperliquid": {
       "description": "#1 Decentralized Perpetual DEX",
       "feature1": "No KYC Required",
@@ -1055,7 +1062,7 @@
       "feature1": "KYC Required",
       "feature2": "High Liquidity",
       "feature3": "Testnet Available",
-      "button": "Register First"
+      "button": "Visit Website"
     },
     "data": {
       "kline": "K-line",
@@ -1694,7 +1701,7 @@
     "registerNew": "Register New Account",
     "registerDescription": "New to Binance? Register with our link for unlimited trades + 5% fee rebate.",
     "continueLimited": "Continue with Limit",
-    "continueLimitedDescription": "This account is limited to 40 automated trades per day (AI Trader + Program). Subscribe or register with referral for unlimited.",
+    "continueLimitedDescription": "This account is limited to 40 automated trades per day (AI Trader + Program).",
     "continueLimitedButton": "I understand",
     "supportTip": "Subscribing to Premium or registering through our referral links helps support platform development. Your understanding means a lot to our team.",
     "rebateNote": "Only accounts without prior referral bindings can be used for AI trading",
@@ -1708,7 +1715,9 @@
     "currentUsage": "Current usage",
     "perDay": "per day",
     "upgradeOptions": "Choose an option to unlock unlimited automated trades:",
-    "resetAt": "Resets at"
+    "resetAt": "Resets at",
+    "title": "Daily trade quota",
+    "explanation": "This account is not eligible for the configured broker rebate, so automated trades are limited per day."
   },
   "hyperAi": {
     "title": "Pilot AI",
@@ -1763,9 +1772,7 @@
     "defaultSuggestions": {
       "intro": "What can you help me with?",
       "setup": "Guide me through the initial setup",
-      "first": "I want to create my first trading strategy",
-      "strategyRadar": "Help me find strategy ideas from Strategy Radar",
-      "walletSignals": "How do I connect Hyper Insight wallet signals?"
+      "first": "I want to create my first trading strategy"
     },
     "connecting": "Connecting...",
     "calling": "Calling",
@@ -2016,5 +2023,16 @@
     "hyperAI": {
       "tooltip": "Chat with Pilot AI"
     }
+  },
+  "nav": {
+    "overview": "Overview",
+    "strategy": "Strategy",
+    "markets": "Markets & Trading",
+    "system": "Analysis & System",
+    "main": "Main navigation",
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar",
+    "modelChat": "Model Chat",
+    "arenaAssets": "Arena Assets"
   }
 }

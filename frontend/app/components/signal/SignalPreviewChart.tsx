@@ -177,12 +177,12 @@ export default function SignalPreviewChart({ klines, triggers, timeWindow, signa
       width: chartContainerRef.current.clientWidth,
       height: 500,
       layout: {
-        background: { color: '#1a1a2e' },
-        textColor: '#d1d5db',
+        background: { color: 'transparent' },
+        textColor: '#94a3b8',
       },
       grid: {
-        vertLines: { color: '#2d2d44' },
-        horzLines: { color: '#2d2d44' },
+        vertLines: { color: 'rgba(148, 163, 184, 0.15)' },
+        horzLines: { color: 'rgba(148, 163, 184, 0.15)' },
       },
       crosshair: {
         mode: 1,
@@ -190,12 +190,12 @@ export default function SignalPreviewChart({ klines, triggers, timeWindow, signa
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
-        borderColor: '#2d2d44',
+        borderColor: 'rgba(148, 163, 184, 0.15)',
         barSpacing: 9,
         rightBarStaysOnScroll: false,
       },
       rightPriceScale: {
-        borderColor: '#2d2d44',
+        borderColor: 'rgba(148, 163, 184, 0.15)',
       },
     })
 

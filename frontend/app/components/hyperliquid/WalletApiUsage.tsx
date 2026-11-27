@@ -92,7 +92,7 @@ export default function WalletApiUsage({ accountId, environment, exchange = 'hyp
   };
 
   const getUsageColor = () => {
-    if (!rateLimit) return 'bg-gray-200';
+    if (!rateLimit) return 'bg-muted';
     if (rateLimit.isOverLimit) return 'bg-red-500';
     if (rateLimit.usagePercent >= 90) return 'bg-red-400';
     if (rateLimit.usagePercent >= 70) return 'bg-yellow-400';
@@ -176,7 +176,7 @@ export default function WalletApiUsage({ accountId, environment, exchange = 'hyp
                 {rateLimit.usagePercent.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
               <div
                 className={`h-full ${getUsageColor()} transition-all duration-300`}
                 style={{ width: `${Math.min(rateLimit.usagePercent, 100)}%` }}
@@ -186,10 +186,10 @@ export default function WalletApiUsage({ accountId, environment, exchange = 'hyp
 
           {/* Over Limit Warning */}
           {rateLimit.isOverLimit && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start space-x-3">
               <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-red-800 mb-1">
+                <p className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
                   ⚠️ API Quota Exceeded
                 </p>
                 <p className="text-xs text-red-700">
@@ -204,10 +204,10 @@ export default function WalletApiUsage({ accountId, environment, exchange = 'hyp
           )}
 
           {/* Information Section */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-gray-700 space-y-2">
+              <div className="text-xs text-foreground space-y-2">
                 <p>
                   <strong>What is this?</strong> Hyperliquid uses address-based request quotas to prevent API abuse.
                 </p>
@@ -223,7 +223,7 @@ export default function WalletApiUsage({ accountId, environment, exchange = 'hyp
                 <p>
                   <strong>What happens if exceeded?</strong> Order placement will fail with "Too many requests" error. Query operations (balance, positions, prices) are not affected.
                 </p>
-                <p className="font-semibold text-blue-800">
+                <p className="font-semibold text-blue-800 dark:text-blue-300">
                   To increase your quota: Complete more trades. Every $1 USDC traded releases 1 request.
                 </p>
               </div>

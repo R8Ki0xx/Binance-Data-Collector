@@ -273,7 +273,7 @@ export default function ConfigPanel({ accountId, onConfigUpdated }: ConfigPanelP
           <button
             type="button"
             onClick={() => setShowPrivateKey(!showPrivateKey)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-foreground"
           >
             {showPrivateKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -311,7 +311,7 @@ export default function ConfigPanel({ accountId, onConfigUpdated }: ConfigPanelP
             max="50"
             value={maxLeverage}
             onChange={(e) => setMaxLeverage(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
           />
         </div>
 
@@ -329,7 +329,7 @@ export default function ConfigPanel({ accountId, onConfigUpdated }: ConfigPanelP
             max={maxLeverage}
             value={defaultLeverage}
             onChange={(e) => setDefaultLeverage(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
           />
         </div>
       </div>

@@ -412,7 +412,7 @@ export default function SettingsDialog({ open, onOpenChange, onAccountUpdated, e
           {/* Existing Accounts */}
           <div className="space-y-4 flex-1 flex flex-col overflow-hidden"  style={{maxHeight: 'calc(100vh - 300px)'}}>
             {error && (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -520,8 +520,8 @@ export default function SettingsDialog({ open, onOpenChange, onAccountUpdated, e
                         {testResult && (
                           <div className={`text-xs p-2 rounded ${
                             testResult.includes('❌')
-                              ? 'bg-red-50 text-red-700 border border-red-200'
-                              : 'bg-green-50 text-green-700 border border-green-200'
+                              ? 'bg-red-50 dark:bg-red-950/40 text-red-700 border border-red-200 dark:border-red-800'
+                              : 'bg-green-50 dark:bg-green-950/40 text-green-700 border border-green-200 dark:border-green-800'
                           }`}>
                             {testResult}
                           </div>

@@ -574,7 +574,7 @@ def on_startup():
             db = SessionLocal()
             try:
                 print("[startup] Warming up numba JIT compilation...")
-                calculate_indicator(db, "BTC", "BOLL", "1h", exchange="hyperliquid")
+                calculate_indicator(db, "BTC", "BOLL", "1h", int(time.time() * 1000), exchange="hyperliquid")
                 print("[startup] Numba warmup completed")
             finally:
                 db.close()

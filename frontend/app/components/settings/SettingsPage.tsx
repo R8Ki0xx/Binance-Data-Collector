@@ -35,6 +35,7 @@ import DataCoverageHeatmap from './DataCoverageHeatmap'
 import ExchangeIcon from '@/components/exchange/ExchangeIcon'
 import { CoinIcon } from '@/components/ui/coin-icon'
 import SamplingDepthCard from './SamplingDepthCard'
+import { setUiLanguage } from '@/lib/language'
 
 interface StorageStats {
   exchange: string
@@ -50,7 +51,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('watchlist')
 
   // Language state
-  const currentLang = i18n.language === 'zh' ? 'zh' : 'en'
+  const currentLang = i18n.language.startsWith('zh') ? 'zh' : 'en'
 
   // Hyperliquid Watchlist state
   const [hlAvailableSymbols, setHlAvailableSymbols] = useState<HyperliquidSymbolMeta[]>([])
@@ -124,15 +125,7 @@ export default function SettingsPage() {
   // Determine current exchange from active tab
   const currentExchange = activeTab === 'hyperliquid-data' ? 'hyperliquid' : activeTab === 'binance-data' ? 'binance' : null
 
-  const toggleLanguage = (lang: 'en' | 'zh') => {
-    i18n.changeLanguage(lang)
-    // Sync language to backend for Bot integration
-    fetch('/api/config/ui_language', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: lang }),
-    }).catch(() => {})
-  }
+  const toggleLanguage = (lang: 'en' | 'zh') => setUiLanguage(i18n, lang)
 
   const fetchWatchlist = useCallback(async () => {
     setHlLoading(true)

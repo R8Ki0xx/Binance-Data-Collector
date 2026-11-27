@@ -419,8 +419,8 @@ export default function WalletConfigPanel({
           // Configuration form
           <div className="space-y-3">
             {!wallet && (
-              <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                <p className="text-yellow-800">
+              <div className="p-2 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
+                <p className="text-yellow-800 dark:text-yellow-300">
                   ⚠️ {t('wallet.noWalletConfigured', 'No {{env}} wallet configured.', { env: envName.toLowerCase() })}
                 </p>
               </div>
@@ -588,9 +588,9 @@ export default function WalletConfigPanel({
         )}
       </div>
 
-      <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-200 rounded p-2">
-        <p className="font-medium text-blue-900 mb-1">💡 {t('wallet.multiWalletSetup', 'Multi-Wallet Setup')}</p>
-        <p className="text-blue-800">
+      <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded p-2">
+        <p className="font-medium text-blue-900 dark:text-blue-300 mb-1">💡 {t('wallet.multiWalletSetup', 'Multi-Wallet Setup')}</p>
+        <p className="text-blue-800 dark:text-blue-300">
           {t('wallet.multiWalletDesc', 'Each AI Trader can have separate wallets for testnet (paper trading) and mainnet (real funds). Configure both to seamlessly switch between environments without reconfiguring.')}
         </p>
       </div>

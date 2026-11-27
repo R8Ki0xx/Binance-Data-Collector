@@ -25,6 +25,8 @@ const resolveWsUrl = () => {
 
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
+import { isKnownPage } from '@/lib/navigation'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import ComprehensiveView from '@/components/portfolio/ComprehensiveView'
 import SystemLogs from '@/components/layout/SystemLogs'
 import PromptManager from '@/components/prompt/PromptManager'
@@ -77,23 +79,6 @@ interface Overview {
 interface Position { id: number; account_id: number; symbol: string; name: string; market: string; quantity: number; available_quantity: number; avg_cost: number; last_price?: number | null; market_value?: number | null }
 interface Order { id: number; order_no: string; symbol: string; name: string; market: string; side: string; order_type: string; price?: number; quantity: number; filled_quantity: number; status: string }
 interface Trade { id: number; order_id: number; account_id: number; symbol: string; name: string; market: string; side: string; price: number; quantity: number; commission: number; trade_time: string }
-
-const PAGE_TITLES: Record<string, string> = {
-  'hyper-ai': 'Pilot AI',
-  comprehensive: 'Dashboard',
-  'system-logs': 'System Logs',
-  'prompt-management': 'Prompt Templates',
-  'program-trader': 'Programs',
-  'signal-management': 'Signal System',
-  'attribution': 'Attribution Analysis',
-  'factor-library': 'Factor Library',
-  'trader-management': 'AI Trader Management',
-  'hyperliquid': 'Manual Trading',
-  'klines': 'K-Line Charts',
-  'model-chat': 'Model Chat',
-  'settings': 'Settings',
-  'arena-assets': 'Arena Assets',
-}
 
 function App() {
   const { tradingMode } = useTradingMode()
@@ -173,7 +158,7 @@ function App() {
     if (hash) {
       const hashParamIndex = hash.indexOf('?')
       const pageName = hashParamIndex !== -1 ? hash.slice(0, hashParamIndex) : hash
-      if (PAGE_TITLES[pageName]) {
+      if (isKnownPage(pageName)) {
         setCurrentPage(pageName)
       }
     }
@@ -186,7 +171,7 @@ function App() {
       if (hash) {
         const paramIdx = hash.indexOf('?')
         const pageName = paramIdx !== -1 ? hash.slice(0, paramIdx) : hash
-        if (PAGE_TITLES[pageName]) setCurrentPage(pageName)
+        if (isKnownPage(pageName)) setCurrentPage(pageName)
       }
     }
     window.addEventListener('hashchange', onHashChange)
@@ -741,22 +726,12 @@ function App() {
     )
   }
 
-  const pageTitle = PAGE_TITLES[currentPage] ?? PAGE_TITLES.comprehensive
-
   return (
     <>
       <div className="h-screen flex overflow-hidden">
-        <Sidebar
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-          onAccountUpdated={handleAccountUpdated}
-        />
+        <Sidebar currentPage={currentPage} onPageChange={handlePageChange} />
         <div className="flex-1 flex flex-col min-w-0">
-          <Header
-            title={pageTitle}
-            currentAccount={account}
-            showAccountSelector={currentPage === 'comprehensive'}
-          />
+          <Header currentPage={currentPage} />
           {renderMainContent()}
         </div>
       </div>
@@ -782,13 +757,24 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <ThemeProvider>
       <ExchangeProvider>
         <TradingModeProvider>
           <ArenaDataProvider>
-            <Toaster position="top-right" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: 'hsl(var(--popover))',
+                  color: 'hsl(var(--popover-foreground))',
+                  border: '1px solid hsl(var(--border))',
+                },
+              }}
+            />
             <App />
           </ArenaDataProvider>
         </TradingModeProvider>
       </ExchangeProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 )

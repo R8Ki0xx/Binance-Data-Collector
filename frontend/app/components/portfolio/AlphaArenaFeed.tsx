@@ -1435,14 +1435,14 @@ export default function AlphaArenaFeed({
                           <span>{t('feed.completedA', 'completed a')}</span>
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
                             trade.side === 'BUY'
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                               : trade.side === 'SELL'
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300'
                               : trade.side === 'CLOSE'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300'
                               : trade.side === 'HOLD'
-                              ? 'bg-gray-200 text-gray-800'
-                              : 'bg-orange-100 text-orange-800'
+                              ? 'bg-muted text-foreground'
+                              : 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300'
                           }`}>
                             {trade.side}
                           </span>
@@ -1598,14 +1598,14 @@ export default function AlphaArenaFeed({
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded text-xs font-bold ${
                               entry.operation?.toUpperCase() === 'BUY'
-                                ? 'bg-emerald-100 text-emerald-800'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                                 : entry.operation?.toUpperCase() === 'SELL'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300'
                                 : entry.operation?.toUpperCase() === 'CLOSE'
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300'
                                 : entry.operation?.toUpperCase() === 'HOLD'
-                                ? 'bg-gray-200 text-gray-800'
-                                : 'bg-orange-100 text-orange-800'
+                                ? 'bg-muted text-foreground'
+                                : 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300'
                             }`}>
                               {(entry.operation || 'UNKNOWN').toUpperCase()}
                             </span>
@@ -1976,14 +1976,14 @@ export default function AlphaArenaFeed({
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded text-xs font-bold ${
                               log.decision_action?.toUpperCase() === 'BUY'
-                                ? 'bg-emerald-100 text-emerald-800'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                                 : log.decision_action?.toUpperCase() === 'SELL'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300'
                                 : log.decision_action?.toUpperCase() === 'CLOSE'
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300'
                                 : log.decision_action?.toUpperCase() === 'HOLD'
-                                ? 'bg-gray-200 text-gray-800'
-                                : 'bg-orange-100 text-orange-800'
+                                ? 'bg-muted text-foreground'
+                                : 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300'
                             }`}>
                               {(log.decision_action || 'UNKNOWN').toUpperCase()}
                             </span>

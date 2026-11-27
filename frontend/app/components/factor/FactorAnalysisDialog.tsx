@@ -173,18 +173,18 @@ export default function FactorAnalysisDialog({
               <h4 className="text-xs font-medium text-muted-foreground mb-1">{t('factors.analysis.icTimeSeries')}</h4>
               <ResponsiveContainer width="100%" height={170}>
                 <LineChart data={history} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v: string) => v.slice(5)} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v.toFixed(3)} />
                   <RTooltip
-                    contentStyle={{ background: '#1a1a2e', border: '1px solid #333', fontSize: 12 }}
-                    labelStyle={{ color: '#9ca3af' }}
-                    itemStyle={{ color: '#e5e7eb' }}
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
                     formatter={(v: number) => [v?.toFixed(4), 'IC']}
                   />
                   <ReferenceLine y={0.05} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} />
                   <ReferenceLine y={-0.05} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} />
-                  <ReferenceLine y={0} stroke="#555" />
+                  <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                   <Line type="monotone" dataKey="ic_mean" stroke="#60a5fa" strokeWidth={2} dot={{ r: 2 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -195,16 +195,16 @@ export default function FactorAnalysisDialog({
               <h4 className="text-xs font-medium text-muted-foreground mb-1">{t('factors.analysis.cumulativeIc')}</h4>
               <ResponsiveContainer width="100%" height={150}>
                 <LineChart data={cumData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v: string) => v.slice(5)} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v.toFixed(2)} />
                   <RTooltip
-                    contentStyle={{ background: '#1a1a2e', border: '1px solid #333', fontSize: 12 }}
-                    labelStyle={{ color: '#9ca3af' }}
-                    itemStyle={{ color: '#e5e7eb' }}
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
                     formatter={(v: number) => [v?.toFixed(4), 'Cumulative IC']}
                   />
-                  <ReferenceLine y={0} stroke="#555" />
+                  <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                   <Line type="monotone" dataKey="cumIc" stroke={cumData.length > 0 && cumData[cumData.length - 1].cumIc >= 0 ? '#22c55e' : '#ef4444'} strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -216,19 +216,19 @@ export default function FactorAnalysisDialog({
               <h4 className="text-xs font-medium text-muted-foreground mb-1">{t('factors.analysis.icByWindow')}</h4>
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={windows} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="forward_period" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v.toFixed(3)} />
                   <RTooltip
-                    contentStyle={{ background: '#1a1a2e', border: '1px solid #333', fontSize: 12 }}
-                    labelStyle={{ color: '#9ca3af' }}
-                    itemStyle={{ color: '#e5e7eb' }}
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
                     formatter={(v: number, name: string) => {
                       if (name === 'ic_mean') return [v?.toFixed(4), 'IC']
                       return [v, name]
                     }}
                   />
-                  <ReferenceLine y={0} stroke="#555" />
+                  <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                   <Bar dataKey="ic_mean" radius={[4, 4, 0, 0]}>
                     {windows.map((w: any, i: number) => (
                       <Cell key={i} fill={barColor(w.ic_mean || 0)} />

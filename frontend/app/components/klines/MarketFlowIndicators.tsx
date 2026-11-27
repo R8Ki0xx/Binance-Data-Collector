@@ -198,22 +198,22 @@ export default function MarketFlowIndicators({
         textColor: '#9ca3af'
       },
       grid: {
-        vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
-        horzLines: { color: 'rgba(42, 46, 57, 0.5)' }
+        vertLines: { color: 'rgba(148, 163, 184, 0.15)' },
+        horzLines: { color: 'rgba(148, 163, 184, 0.15)' }
       },
       rightPriceScale: {
-        borderColor: 'rgba(42, 46, 57, 0.5)',
+        borderColor: 'rgba(148, 163, 184, 0.15)',
         scaleMargins: { top: 0.1, bottom: 0.1 }
       },
       timeScale: {
-        borderColor: 'rgba(42, 46, 57, 0.5)',
+        borderColor: 'rgba(148, 163, 184, 0.15)',
         timeVisible: true,
         secondsVisible: false
       },
       crosshair: {
         mode: 1,
-        vertLine: { color: 'rgba(255, 255, 255, 0.4)', width: 1, style: 2 },
-        horzLine: { color: 'rgba(255, 255, 255, 0.4)', width: 1, style: 2 }
+        vertLine: { color: 'rgba(148, 163, 184, 0.6)', width: 1, style: 2 },
+        horzLine: { color: 'rgba(148, 163, 184, 0.6)', width: 1, style: 2 }
       }
     })
 

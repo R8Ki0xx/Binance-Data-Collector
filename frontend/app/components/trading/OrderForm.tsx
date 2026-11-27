@@ -124,13 +124,13 @@ export default function OrderForm({
           
           {/* Dropdown */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto mt-1">
+            <div className="absolute top-full left-0 right-0 z-50 bg-card border border-border rounded-md shadow-lg max-h-64 overflow-y-auto mt-1">
               {loading ? (
                 <div className="p-3 text-center text-gray-500">Loading...</div>
               ) : filteredSymbols.length > 0 ? (
                 <>
                   {!searchTerm && (
-                    <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">
+                    <div className="px-3 py-2 text-xs text-gray-500 bg-muted border-b">
                       Popular Cryptocurrencies
                     </div>
                   )}
@@ -140,7 +140,7 @@ export default function OrderForm({
                       <div
                         key={symbolItem}
                         onClick={() => handleSymbolSelect(symbolItem)}
-                        className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        className="px-3 py-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                       >
                         <div className="flex justify-between items-center">
                           <div>

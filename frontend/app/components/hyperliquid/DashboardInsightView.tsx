@@ -130,8 +130,8 @@ function getSentimentTheme(sentiment: InsightSentiment) {
     return {
       text: 'text-emerald-600',
       softText: 'text-emerald-700',
-      softBg: 'bg-emerald-50',
-      border: 'border-emerald-200/80',
+      softBg: 'bg-emerald-50 dark:bg-emerald-950/40',
+      border: 'border-emerald-200/80 dark:border-emerald-800',
       glow: 'shadow-[0_0_32px_rgba(16,185,129,0.18)]',
     }
   }
@@ -140,8 +140,8 @@ function getSentimentTheme(sentiment: InsightSentiment) {
     return {
       text: 'text-red-600',
       softText: 'text-red-700',
-      softBg: 'bg-red-50',
-      border: 'border-red-200/80',
+      softBg: 'bg-red-50 dark:bg-red-950/40',
+      border: 'border-red-200/80 dark:border-red-800',
       glow: 'shadow-[0_0_32px_rgba(239,68,68,0.18)]',
     }
   }
@@ -149,8 +149,8 @@ function getSentimentTheme(sentiment: InsightSentiment) {
   return {
     text: 'text-cyan-600',
     softText: 'text-cyan-700',
-    softBg: 'bg-cyan-50',
-    border: 'border-cyan-200/80',
+    softBg: 'bg-cyan-50 dark:bg-cyan-950/40',
+    border: 'border-cyan-200/80 dark:border-cyan-800',
     glow: 'shadow-[0_0_32px_rgba(8,145,178,0.18)]',
   }
 }
@@ -323,8 +323,8 @@ function ReactionChip({
     <span
       className={`inline-flex items-center rounded-full ${compact ? 'gap-0.5 px-1.5 py-0.5 text-[10px]' : 'gap-1 px-2 py-0.5'} ${
         positive
-          ? 'bg-emerald-50 text-emerald-700'
-          : 'bg-red-50 text-red-700'
+          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700'
+          : 'bg-red-50 dark:bg-red-950/40 text-red-700'
       }`}
     >
       <span className="text-[10px]">{positive ? '↑' : '↓'}</span>
@@ -548,7 +548,7 @@ function BreakdownBars({
                 {item.value}/100{item.key === strongest ? ` · ${t('dashboard.insight.dominantSignal', 'Dominant')}` : ''}
               </div>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-slate-200/70">
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted/70">
               <div
                 className={`h-full rounded-full bg-gradient-to-r ${getBreakdownBarClass(item.value)} ${item.key === strongest ? 'shadow-[0_0_18px_rgba(14,165,233,0.24)]' : ''}`}
                 style={{ width: `${clamp(item.value, 0, 100)}%` }}
@@ -636,15 +636,15 @@ function PriceRangeBar({
 
         {typeof insight.next_cycle_target_price === 'number' && (
           <div className="absolute inset-y-0" style={{ left: positionOf(insight.next_cycle_target_price) }}>
-            <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-sky-500 bg-white shadow-sm" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-sky-500 bg-card shadow-sm" />
           </div>
         )}
       </div>
 
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
         {compactSupports.map((level, index) => (
-          <div key={`support-chip-${index}`} className="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2 text-xs">
-            <span className="font-medium text-emerald-800">{level.label || t('dashboard.insight.support', 'Support')}</span>
+          <div key={`support-chip-${index}`} className="flex items-center justify-between rounded-xl border border-emerald-200/80 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/40 px-3 py-2 text-xs">
+            <span className="font-medium text-emerald-800 dark:text-emerald-300">{level.label || t('dashboard.insight.support', 'Support')}</span>
             <span className="tabular-nums text-emerald-700">{formatPrice(level.price)}</span>
           </div>
         ))}
@@ -655,9 +655,9 @@ function PriceRangeBar({
           </div>
         ))}
         {typeof currentPrice === 'number' && (
-          <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs">
-            <span className="font-medium text-slate-800">{t('dashboard.insight.currentPrice', 'Current')}</span>
-            <span className="tabular-nums text-slate-700">{formatPrice(currentPrice)}</span>
+          <div className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/80 px-3 py-2 text-xs">
+            <span className="font-medium text-foreground">{t('dashboard.insight.currentPrice', 'Current')}</span>
+            <span className="tabular-nums text-foreground">{formatPrice(currentPrice)}</span>
           </div>
         )}
         {typeof insight.next_cycle_target_price === 'number' && (
@@ -1382,8 +1382,8 @@ export default function DashboardInsightView() {
                           <div className="flex items-center gap-2">
                             <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
                               event.iconVariant === 'flow-down'
-                                ? 'bg-red-50 text-red-600'
-                                : 'bg-emerald-50 text-emerald-600'
+                                ? 'bg-red-50 dark:bg-red-950/40 text-red-600'
+                                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600'
                             }`}>
                               <FlowEventIcon direction={event.iconVariant === 'flow-down' ? 'down' : 'up'} />
                             </div>
@@ -1508,7 +1508,7 @@ export default function DashboardInsightView() {
               <CardTitle className="text-sm">{t('dashboard.insight.biasTitle', 'Pilot AI Auto Insight')}</CardTitle>
               <InsightRefreshBadge active={showRefreshBadge} />
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
               <Switch
                 checked={aiInsightEnabled}
                 onCheckedChange={(checked) => {
@@ -1628,7 +1628,7 @@ export default function DashboardInsightView() {
                     </div>
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      className="prose prose-sm max-w-none text-foreground dark:prose-invert"
+                      className="prose prose-sm dark:prose-invert max-w-none text-foreground dark:prose-invert"
                     >
                       {aiInsight.explanation_markdown}
                     </ReactMarkdown>

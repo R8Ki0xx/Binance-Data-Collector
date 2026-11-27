@@ -690,7 +690,7 @@ export default function AiPromptChatModal({
                           </div>
                         </details>
                       )}
-                      <div className={`text-sm prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
+                      <div className={`text-sm prose prose-sm dark:prose-invert max-w-none ${msg.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
                         {msg.content ? (
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}

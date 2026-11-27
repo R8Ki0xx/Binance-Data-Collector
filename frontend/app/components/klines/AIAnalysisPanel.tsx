@@ -583,7 +583,7 @@ export default function AIAnalysisPanel({
           <CardContent className="py-2 space-y-3">
             {result.success && result.analysis ? (
               <>
-                <div className="prose prose-sm max-w-none">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
                   <ReactMarkdown>
                     {getAnalysisSummary(result.analysis)}
                   </ReactMarkdown>
@@ -622,7 +622,7 @@ export default function AIAnalysisPanel({
           </DialogHeader>
           <div className="space-y-3">
             <div className="rounded-md border p-4 bg-background">
-              <div className="prose prose-sm md:prose-base max-w-none break-words">
+              <div className="prose prose-sm dark:prose-invert md:prose-base max-w-none break-words">
                 <ReactMarkdown>
                   {result?.analysis || ''}
                 </ReactMarkdown>

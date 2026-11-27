@@ -464,7 +464,7 @@ export default function OrderForm({
               max={maxLeverage}
               value={leverage}
               onChange={(e) => setLeverage(parseInt(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
             />
             {showLeverageWarning && (
               <div className="flex items-center space-x-2 text-yellow-600 text-sm">
@@ -587,10 +587,10 @@ export default function OrderForm({
 
         {/* Risk Information */}
         {side !== 'close' && size && parseFloat(size) > 0 && (
-          <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+          <div className="p-4 bg-muted rounded-lg space-y-2">
             {estimatedLiqPrice > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center text-gray-700">
+                <span className="flex items-center text-foreground">
                   <AlertTriangle className="w-4 h-4 mr-1 text-yellow-600" />
                   {t('order.estimatedLiquidation', 'Estimated Liquidation')}
                 </span>
@@ -599,7 +599,7 @@ export default function OrderForm({
             )}
 
             <div className="flex justify-between text-sm">
-              <span className="text-gray-700">{t('order.requiredMargin', 'Required Margin')}</span>
+              <span className="text-foreground">{t('order.requiredMargin', 'Required Margin')}</span>
               <span className={`font-medium ${canAfford ? 'text-green-600' : 'text-red-600'}`}>
                 ${requiredMargin.toFixed(2)}
               </span>
@@ -607,7 +607,7 @@ export default function OrderForm({
 
             {balance && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-700">{t('order.availableBalance', 'Available Balance')}</span>
+                <span className="text-foreground">{t('order.availableBalance', 'Available Balance')}</span>
                 <span className="font-medium">${balance.availableBalance.toFixed(2)}</span>
               </div>
             )}
@@ -623,22 +623,22 @@ export default function OrderForm({
 
         {/* Position Information (for close orders) */}
         {side === 'close' && (
-          <div className="p-4 bg-blue-50 rounded-lg space-y-2">
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-lg space-y-2">
             {getCurrentPosition() ? (
               <>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-700">{t('order.currentPosition', 'Current Position')}</span>
+                  <span className="text-foreground">{t('order.currentPosition', 'Current Position')}</span>
                   <span className="font-medium">
                     {Math.abs(getCurrentPosition()!.szi)} {symbol}
                     ({getCurrentPosition()!.szi > 0 ? 'LONG' : 'SHORT'})
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-700">{t('order.entryPrice', 'Entry Price')}</span>
+                  <span className="text-foreground">{t('order.entryPrice', 'Entry Price')}</span>
                   <span className="font-medium">${getCurrentPosition()!.entryPx.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-700">{t('order.unrealizedPnl', 'Unrealized PnL')}</span>
+                  <span className="text-foreground">{t('order.unrealizedPnl', 'Unrealized PnL')}</span>
                   <span className={`font-medium ${getCurrentPosition()!.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ${getCurrentPosition()!.unrealizedPnl.toFixed(2)}
                   </span>

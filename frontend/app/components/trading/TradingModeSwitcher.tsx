@@ -41,7 +41,7 @@ export default function TradingModeSwitcher() {
   return (
     <div className="flex items-center space-x-2">
       <span className="text-xs font-medium text-gray-600">{t('trading.mode', 'Mode')}:</span>
-      <div className="inline-flex rounded-md border border-gray-300 bg-white p-0.5">
+      <div className="inline-flex rounded-md border border-border bg-card p-0.5">
         {modes.map((mode) => (
           <button
             key={mode.value}
@@ -51,7 +51,7 @@ export default function TradingModeSwitcher() {
               ${
                 tradingMode === mode.value
                   ? `${mode.color} text-white shadow-sm`
-                  : 'text-gray-700 hover:bg-gray-100'
+                  : 'text-foreground hover:bg-muted'
               }
             `}
           >

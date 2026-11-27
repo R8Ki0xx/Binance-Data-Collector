@@ -51,11 +51,11 @@ export default function MobilePrograms() {
 
   const getActionStyle = (action?: string | null) => {
     const a = (action || '').toUpperCase()
-    if (a === 'BUY' || a === 'LONG') return 'bg-emerald-100 text-emerald-800'
-    if (a === 'SELL' || a === 'SHORT') return 'bg-red-100 text-red-800'
-    if (a === 'CLOSE') return 'bg-blue-100 text-blue-800'
-    if (a === 'HOLD') return 'bg-gray-200 text-gray-800'
-    return 'bg-orange-100 text-orange-800'
+    if (a === 'BUY' || a === 'LONG') return 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
+    if (a === 'SELL' || a === 'SHORT') return 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300'
+    if (a === 'CLOSE') return 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300'
+    if (a === 'HOLD') return 'bg-muted text-foreground'
+    return 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300'
   }
 
   // Detail view for full content
@@ -201,12 +201,12 @@ function ProgramCard({
           </span>
         </div>
         <span className={`px-2 py-0.5 rounded text-[10px] ${
-          entry.trigger_type === 'signal' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'
+          entry.trigger_type === 'signal' ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700' : 'bg-muted text-slate-600'
         }`}>
           {entry.trigger_type === 'signal' ? t('feed.signalPoolTrigger', 'Signal Pool') : t('feed.scheduledTrigger', 'Scheduled')}
         </span>
         <span className={`px-2 py-0.5 rounded text-[10px] ${
-          entry.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          entry.success ? 'bg-green-100 dark:bg-green-950/40 text-green-700' : 'bg-red-100 dark:bg-red-950/40 text-red-700'
         }`}>
           {entry.success ? t('common.success', 'Success') : t('common.failed', 'Failed')}
         </span>
@@ -274,7 +274,7 @@ function ExpandedSections({ entry, isSectionExpanded, toggleSection, onViewDetai
     <div className="space-y-2 pt-2" onClick={e => e.stopPropagation()}>
       {/* Error message if failed */}
       {!entry.success && entry.error_message && (
-        <div className="text-xs text-red-600 bg-red-50 rounded p-2">
+        <div className="text-xs text-red-600 bg-red-50 dark:bg-red-950/40 rounded p-2">
           <span className="font-medium">{t('common.error', 'Error')}:</span> {entry.error_message}
         </div>
       )}

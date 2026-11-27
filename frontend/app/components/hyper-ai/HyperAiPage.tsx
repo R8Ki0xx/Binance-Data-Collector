@@ -541,8 +541,6 @@ function WelcomeMessage({
     t('hyperAi.defaultSuggestions.intro', 'What can you help me with?'),
     t('hyperAi.defaultSuggestions.setup', 'Guide me through the initial setup'),
     t('hyperAi.defaultSuggestions.first', 'I want to create my first trading strategy'),
-    t('hyperAi.defaultSuggestions.strategyRadar', 'Help me find strategy ideas from Strategy Radar'),
-    t('hyperAi.defaultSuggestions.walletSignals', 'How do I connect Hyper Insight wallet signals?'),
   ]
 
   const displaySuggestions = (isNewUser || suggestions.length === 0) ? defaultSuggestions : suggestions
@@ -1812,7 +1810,7 @@ const MessageBubble = memo(function MessageBubble({
         )}
 
         {/* Main content with Markdown */}
-        <div className={`text-sm prose prose-sm max-w-none ${
+        <div className={`text-sm prose prose-sm dark:prose-invert max-w-none ${
           isUser ? 'prose-invert' : 'dark:prose-invert'
         }`}>
           {message.content ? (

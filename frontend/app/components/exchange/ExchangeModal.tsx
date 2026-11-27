@@ -43,7 +43,7 @@ export default function ExchangeModal({ isOpen, onClose }: ExchangeModalProps) {
         t('exchange.binance.feature2', 'High Liquidity'),
         t('exchange.binance.feature3', 'Testnet Available'),
       ],
-      buttonText: t('exchange.binance.button', 'Register First'),
+      buttonText: t('exchange.binance.button', 'Visit Website'),
     },
   }
 

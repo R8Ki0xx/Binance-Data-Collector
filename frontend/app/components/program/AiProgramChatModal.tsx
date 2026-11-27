@@ -705,7 +705,7 @@ function ChatArea({
                     </div>
                   </details>
                 )}
-                <div className={`text-sm prose prose-sm max-w-none overflow-x-auto ${
+                <div className={`text-sm prose prose-sm dark:prose-invert max-w-none overflow-x-auto ${
                   msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert'
                 } [&_table]:w-full [&_table]:table-fixed [&_th]:text-left [&_td]:break-words`}>
                   {msg.content ? (

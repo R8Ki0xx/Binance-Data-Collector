@@ -157,7 +157,7 @@ export default function BalanceCard({
 
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">Used Margin</span>
-          <span className="text-lg font-semibold text-gray-700">
+          <span className="text-lg font-semibold text-foreground">
             ${balance.usedMargin.toFixed(2)}
           </span>
         </div>
@@ -170,7 +170,7 @@ export default function BalanceCard({
             {balance.marginUsagePercent.toFixed(1)}%
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${marginStatus.color}`}
             style={{ width: `${Math.min(balance.marginUsagePercent, 100)}%` }}
