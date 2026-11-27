@@ -6,10 +6,11 @@ to unified internal format.
 """
 
 import logging
+import threading
+import time
 import requests
 from decimal import Decimal
-from typing import List, Optional
-from datetime import datetime
+from typing import Dict, List, Optional
 
 from .base_adapter import (
     BaseExchangeAdapter,
@@ -24,6 +25,18 @@ from .symbol_mapper import SymbolMapper
 
 logger = logging.getLogger(__name__)
 
+# Pause applied when Binance omits Retry-After (418 = IP already banned)
+RATE_LIMIT_DEFAULT_PAUSE_SECONDS = {429: 60, 418: 120}
+RETRY_BACKOFF_SECONDS = 0.5
+
+
+class BinanceRateLimitError(requests.exceptions.RequestException):
+    """Raised while Binance has asked us to stop sending requests."""
+
+
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
 
 class BinanceAdapter(BaseExchangeAdapter):
     """
@@ -36,9 +49,20 @@ class BinanceAdapter(BaseExchangeAdapter):
     BASE_URL = "https://fapi.binance.com"
     TESTNET_URL = "https://testnet.binancefuture.com"
 
-    def __init__(self, environment: str = "mainnet"):
+    # Rate limits apply per IP, so the pause is shared by every adapter instance
+    _blocked_until: Dict[str, float] = {}
+    _blocked_lock = threading.Lock()
+
+    def __init__(self, environment: str = "mainnet", max_retries: int = 0):
+        """
+        Args:
+            environment: "mainnet" or "testnet"
+            max_retries: Extra attempts for network errors and 5xx responses.
+                         Defaults to 0 so latency-sensitive callers are unaffected.
+        """
         super().__init__(environment)
         self.base_url = self.TESTNET_URL if environment == "testnet" else self.BASE_URL
+        self.max_retries = max_retries
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
 
@@ -53,16 +77,58 @@ class BinanceAdapter(BaseExchangeAdapter):
         """Convert Binance symbol to internal format."""
         return SymbolMapper.to_internal(symbol, "binance")
 
+    def rate_limited_for(self) -> float:
+        """Seconds left in the current rate-limit pause (0 if not limited)."""
+        with self._blocked_lock:
+            until = self._blocked_until.get(self.base_url, 0.0)
+        return max(0.0, until - time.time())
+
+    def _start_rate_limit_pause(self, response) -> float:
+        try:
+            pause = float(response.headers.get("Retry-After"))
+        except (TypeError, ValueError):
+            pause = RATE_LIMIT_DEFAULT_PAUSE_SECONDS[response.status_code]
+        with self._blocked_lock:
+            until = max(self._blocked_until.get(self.base_url, 0.0), time.time() + pause)
+            self._blocked_until[self.base_url] = until
+        return pause
+
     def _request(self, endpoint: str, params: dict = None) -> dict:
         """Make HTTP request to Binance API."""
         url = f"{self.base_url}{endpoint}"
-        try:
-            response = self.session.get(url, params=params, timeout=10)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Binance API request failed: {endpoint} - {e}")
-            raise
+        attempt = 0
+        while True:
+            remaining = self.rate_limited_for()
+            if remaining > 0:
+                raise BinanceRateLimitError(
+                    f"Binance rate limit pause active for another {remaining:.0f}s"
+                )
+            try:
+                response = self.session.get(url, params=params, timeout=10)
+                if response.status_code in RATE_LIMIT_DEFAULT_PAUSE_SECONDS:
+                    pause = self._start_rate_limit_pause(response)
+                    message = (
+                        f"Binance returned HTTP {response.status_code} for {endpoint}; "
+                        f"pausing requests for {pause:.0f}s"
+                    )
+                    logger.warning(message)
+                    raise BinanceRateLimitError(message, response=response)
+                response.raise_for_status()
+                return response.json()
+            except BinanceRateLimitError:
+                raise
+            except requests.exceptions.RequestException as e:
+                status = getattr(e.response, "status_code", None)
+                transient = isinstance(
+                    e,
+                    (requests.exceptions.ConnectionError, requests.exceptions.Timeout),
+                ) or (status is not None and status >= 500)
+                if transient and attempt < self.max_retries:
+                    time.sleep(RETRY_BACKOFF_SECONDS * (2 ** attempt))
+                    attempt += 1
+                    continue
+                logger.error(f"Binance API request failed: {endpoint} - {e}")
+                raise
 
     def _interval_to_binance(self, interval: str) -> str:
         """Convert internal interval format to Binance format."""
@@ -156,7 +222,7 @@ class BinanceAdapter(BaseExchangeAdapter):
 
     def _parse_orderbook(self, raw_data: dict, symbol: str) -> UnifiedOrderbook:
         """Parse Binance orderbook response to unified format."""
-        timestamp = raw_data.get("E", int(datetime.utcnow().timestamp() * 1000))
+        timestamp = raw_data.get("E") or _now_ms()
         bids = raw_data.get("bids", [])
         asks = raw_data.get("asks", [])
 
@@ -166,6 +232,8 @@ class BinanceAdapter(BaseExchangeAdapter):
         # Sum top levels for depth
         bid_depth_sum = sum(Decimal(str(b[1])) for b in bids[:10])
         ask_depth_sum = sum(Decimal(str(a[1])) for a in asks[:10])
+        bid_depth_5 = sum(Decimal(str(b[1])) for b in bids[:5])
+        ask_depth_5 = sum(Decimal(str(a[1])) for a in asks[:5])
 
         spread = best_ask - best_bid
         mid_price = (best_ask + best_bid) / 2
@@ -181,6 +249,8 @@ class BinanceAdapter(BaseExchangeAdapter):
             ask_depth_sum=ask_depth_sum,
             spread=spread,
             spread_bps=spread_bps,
+            bid_depth_5=bid_depth_5,
+            ask_depth_5=ask_depth_5,
         )
 
     def fetch_funding_rate(self, symbol: str) -> UnifiedFunding:
@@ -231,7 +301,7 @@ class BinanceAdapter(BaseExchangeAdapter):
         return UnifiedOpenInterest(
             exchange="binance",
             symbol=symbol,
-            timestamp=int(datetime.utcnow().timestamp() * 1000),
+            timestamp=raw_data.get("time") or _now_ms(),
             open_interest=Decimal(str(raw_data["openInterest"])),
         )
 
@@ -334,7 +404,11 @@ class BinanceAdapter(BaseExchangeAdapter):
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
     ) -> List[UnifiedSentiment]:
-        """Fetch historical long/short ratio (Binance supports 30 days)."""
+        """
+        Fetch historical long/short ratio (Binance supports 30 days).
+
+        Request errors propagate so callers can tell a failure from an empty result.
+        """
         exchange_symbol = self._to_exchange_symbol(symbol)
         params = {
             "symbol": exchange_symbol,
@@ -346,19 +420,15 @@ class BinanceAdapter(BaseExchangeAdapter):
         if end_time:
             params["endTime"] = end_time
 
-        try:
-            raw_data = self._request("/futures/data/topLongShortPositionRatio", params)
-            return [
-                UnifiedSentiment(
-                    exchange="binance",
-                    symbol=symbol,
-                    timestamp=item["timestamp"],
-                    long_ratio=Decimal(str(item["longAccount"])),
-                    short_ratio=Decimal(str(item["shortAccount"])),
-                    long_short_ratio=Decimal(str(item["longShortRatio"])),
-                )
-                for item in raw_data
-            ]
-        except Exception as e:
-            logger.warning(f"Failed to fetch sentiment history for {symbol}: {e}")
-            return []
+        raw_data = self._request("/futures/data/topLongShortPositionRatio", params)
+        return [
+            UnifiedSentiment(
+                exchange="binance",
+                symbol=symbol,
+                timestamp=item["timestamp"],
+                long_ratio=Decimal(str(item["longAccount"])),
+                short_ratio=Decimal(str(item["shortAccount"])),
+                long_short_ratio=Decimal(str(item["longShortRatio"])),
+            )
+            for item in raw_data
+        ]

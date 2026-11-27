@@ -6,7 +6,10 @@ Works with any exchange adapter that produces unified data structures.
 """
 
 import logging
+import time
+from bisect import bisect_left
 from decimal import Decimal
+from itertools import groupby
 from typing import List, Optional
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
@@ -100,53 +103,73 @@ class ExchangeDataPersistence:
                 inserted += 1
 
         self.db.commit()
-        logger.info(f"Saved klines: {inserted} inserted, {updated} updated")
+        logger.debug(f"Saved klines: {inserted} inserted, {updated} updated")
         return {"inserted": inserted, "updated": updated}
 
-    def save_taker_volumes_from_klines(
+    def fill_missing_taker_volumes_from_klines(
         self,
         klines: List[UnifiedKline],
+        settle_seconds: int = 120,
     ) -> dict:
         """
-        Save taker buy/sell volumes from K-line data to market_trades_aggregated.
+        Backfill gaps in market_trades_aggregated from 1m K-line taker volumes.
 
-        This is used for exchanges like Binance where K-lines include taker volumes,
-        eliminating the need for separate trade stream collection.
+        Only minutes with no trade rows at all are inserted. Existing rows are never
+        touched: the table is summed by time bucket, so writing a 1m total next to
+        (or over) the 15-second WebSocket rows would double count volume.
+
+        Args:
+            klines: 1m UnifiedKline objects from a single symbol or several
+            settle_seconds: Skip candles closed more recently than this, so the
+                            WebSocket collector has had a chance to flush them
+
+        Returns:
+            Dict with inserted and skipped counts
         """
+        cutoff = time.time() - settle_seconds
+        candidates = sorted(
+            (
+                k for k in klines
+                if k.interval == "1m"
+                and k.taker_buy_volume is not None
+                and k.timestamp + 60 <= cutoff
+            ),
+            key=lambda k: (k.exchange, k.symbol, k.timestamp),
+        )
         inserted = 0
-        updated = 0
+        skipped = 0
 
-        for kline in klines:
-            if kline.taker_buy_volume is None:
-                continue
+        for (exchange, symbol), group in groupby(
+            candidates, key=lambda k: (k.exchange, k.symbol)
+        ):
+            group = list(group)
+            rows = self.db.query(MarketTradesAggregated.timestamp).filter(
+                MarketTradesAggregated.exchange == exchange,
+                MarketTradesAggregated.symbol == symbol,
+                MarketTradesAggregated.timestamp >= group[0].timestamp * 1000,
+                MarketTradesAggregated.timestamp <= (group[-1].timestamp + 60) * 1000,
+            ).all()
+            existing = sorted(row[0] for row in rows)
 
-            # Convert timestamp from seconds to milliseconds
-            timestamp_ms = kline.timestamp * 1000
+            for kline in group:
+                # Convert timestamp from seconds to milliseconds
+                timestamp_ms = kline.timestamp * 1000
 
-            # Calculate notional if not provided (fallback: volume * close_price)
-            taker_buy_notional = kline.taker_buy_notional
-            taker_sell_notional = kline.taker_sell_notional
-            if taker_buy_notional is None and kline.close_price:
-                taker_buy_notional = kline.taker_buy_volume * kline.close_price
-            if taker_sell_notional is None and kline.close_price:
-                taker_sell_notional = kline.taker_sell_volume * kline.close_price
+                # WebSocket rows are stamped at the end of their window, so the
+                # row at +60s still belongs to this minute
+                first = bisect_left(existing, timestamp_ms)
+                if first < len(existing) and existing[first] <= timestamp_ms + 60_000:
+                    skipped += 1
+                    continue
 
-            existing = self.db.query(MarketTradesAggregated).filter(
-                MarketTradesAggregated.exchange == kline.exchange,
-                MarketTradesAggregated.symbol == kline.symbol,
-                MarketTradesAggregated.timestamp == timestamp_ms,
-            ).first()
+                # Calculate notional if not provided (fallback: volume * close_price)
+                taker_buy_notional = kline.taker_buy_notional
+                taker_sell_notional = kline.taker_sell_notional
+                if taker_buy_notional is None and kline.close_price:
+                    taker_buy_notional = kline.taker_buy_volume * kline.close_price
+                if taker_sell_notional is None and kline.close_price:
+                    taker_sell_notional = kline.taker_sell_volume * kline.close_price
 
-            if existing:
-                existing.taker_buy_volume = kline.taker_buy_volume
-                existing.taker_sell_volume = kline.taker_sell_volume
-                existing.taker_buy_count = kline.trade_count or 0
-                existing.taker_buy_notional = taker_buy_notional or 0
-                existing.taker_sell_notional = taker_sell_notional or 0
-                existing.high_price = kline.high_price
-                existing.low_price = kline.low_price
-                updated += 1
-            else:
                 record = MarketTradesAggregated(
                     exchange=kline.exchange,
                     symbol=kline.symbol,
@@ -164,10 +187,18 @@ class ExchangeDataPersistence:
                 inserted += 1
 
         self.db.commit()
-        return {"inserted": inserted, "updated": updated}
+        return {"inserted": inserted, "skipped": skipped}
 
     def save_orderbook(self, orderbook: UnifiedOrderbook) -> bool:
         """Save orderbook snapshot to market_orderbook_snapshots table."""
+        # Adapters without a separate top-5 sum fall back to the single depth sum
+        bid_depth_5 = orderbook.bid_depth_5
+        ask_depth_5 = orderbook.ask_depth_5
+        if bid_depth_5 is None:
+            bid_depth_5 = orderbook.bid_depth_sum
+        if ask_depth_5 is None:
+            ask_depth_5 = orderbook.ask_depth_sum
+
         try:
             existing = self.db.query(MarketOrderbookSnapshots).filter(
                 MarketOrderbookSnapshots.exchange == orderbook.exchange,
@@ -178,8 +209,8 @@ class ExchangeDataPersistence:
             if existing:
                 existing.best_bid = orderbook.best_bid
                 existing.best_ask = orderbook.best_ask
-                existing.bid_depth_5 = orderbook.bid_depth_sum
-                existing.ask_depth_5 = orderbook.ask_depth_sum
+                existing.bid_depth_5 = bid_depth_5
+                existing.ask_depth_5 = ask_depth_5
                 existing.bid_depth_10 = orderbook.bid_depth_sum
                 existing.ask_depth_10 = orderbook.ask_depth_sum
                 existing.spread = orderbook.spread
@@ -190,8 +221,8 @@ class ExchangeDataPersistence:
                     timestamp=orderbook.timestamp,
                     best_bid=orderbook.best_bid,
                     best_ask=orderbook.best_ask,
-                    bid_depth_5=orderbook.bid_depth_sum,
-                    ask_depth_5=orderbook.ask_depth_sum,
+                    bid_depth_5=bid_depth_5,
+                    ask_depth_5=ask_depth_5,
                     bid_depth_10=orderbook.bid_depth_sum,
                     ask_depth_10=orderbook.ask_depth_sum,
                     spread=orderbook.spread,

@@ -878,6 +878,17 @@ class BinanceSymbolSelectionRequest(BaseModel):
         }
 
 
+@router.get("/collector/status")
+def get_collector_status():
+    """Return health of the Binance REST and WebSocket data collectors."""
+    from services.exchanges.binance_collector import binance_collector
+    from services.exchanges.binance_ws_collector import binance_ws_collector
+    return {
+        "rest": binance_collector.get_status(),
+        "websocket": binance_ws_collector.get_status(),
+    }
+
+
 @router.get("/symbols/available")
 def list_available_symbols():
     """Return cached Binance tradable symbols (refreshed periodically)."""

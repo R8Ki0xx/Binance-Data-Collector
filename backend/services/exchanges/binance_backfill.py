@@ -5,12 +5,14 @@ Binance historical data backfill service
 import asyncio
 import logging
 import time
-from datetime import datetime, timedelta
-from typing import List, Optional
+from dataclasses import replace
+from typing import Optional
+
+import requests
 
 from database.connection import SessionLocal
 from database.models import BinanceBackfillTask
-from .binance_adapter import BinanceAdapter
+from .binance_adapter import BinanceAdapter, BinanceRateLimitError
 from .data_persistence import ExchangeDataPersistence
 
 logger = logging.getLogger(__name__)
@@ -22,12 +24,15 @@ OI_BACKFILL_DAYS = 30
 FUNDING_BACKFILL_DAYS = 365
 SENTIMENT_BACKFILL_DAYS = 30
 
+REQUEST_MAX_RETRIES = 2
+RATE_LIMIT_MAX_WAITS = 3  # Rate-limit pauses to sit out before giving up on a request
+
 
 class BinanceBackfillService:
     """Service for backfilling Binance historical data"""
 
     def __init__(self):
-        self.adapter = BinanceAdapter()
+        self.adapter = BinanceAdapter(max_retries=REQUEST_MAX_RETRIES)
         self.running = False
         self.current_task_id: Optional[int] = None
 
@@ -68,59 +73,48 @@ class BinanceBackfillService:
             # Steps: (klines x periods) + OI + Funding + Sentiment per symbol
             total_steps = len(symbols) * (len(KLINE_PERIODS) + 3)
             current_step = 0
+            failed_steps = []
 
             persistence = ExchangeDataPersistence(db)
 
             for symbol in symbols:
-                # 1. Backfill K-lines for each period
-                for period in KLINE_PERIODS:
+                # 1. K-lines per period, 2. OI, 3. Funding (365 days), 4. Sentiment (30 days)
+                steps = [
+                    (f"klines {period}", self._backfill_klines, (symbol, period))
+                    for period in KLINE_PERIODS
+                ]
+                steps += [
+                    ("open interest", self._backfill_oi, (symbol,)),
+                    ("funding", self._backfill_funding, (symbol,)),
+                    ("sentiment", self._backfill_sentiment, (symbol,)),
+                ]
+
+                for name, step, args in steps:
                     try:
-                        await self._backfill_klines(symbol, period, persistence)
+                        await step(*args, persistence)
                     except Exception as e:
-                        logger.error(f"Kline backfill failed for {symbol}/{period}: {e}")
+                        db.rollback()
+                        logger.error(f"Backfill of {name} failed for {symbol}: {e}")
+                        failed_steps.append(f"{symbol} {name}: {e}")
                     current_step += 1
                     task.progress = int(current_step / total_steps * 100)
                     db.commit()
                     # Wait 3 seconds between requests to avoid API rate limiting
                     await asyncio.sleep(3)
 
-                # 2. Backfill OI (30 days)
-                try:
-                    await self._backfill_oi(symbol, persistence)
-                except Exception as e:
-                    logger.error(f"OI backfill failed for {symbol}: {e}")
-                current_step += 1
-                task.progress = int(current_step / total_steps * 100)
-                db.commit()
-                await asyncio.sleep(3)
-
-                # 3. Backfill Funding Rate (365 days)
-                try:
-                    await self._backfill_funding(symbol, persistence)
-                except Exception as e:
-                    logger.error(f"Funding backfill failed for {symbol}: {e}")
-                current_step += 1
-                task.progress = int(current_step / total_steps * 100)
-                db.commit()
-                await asyncio.sleep(3)
-
-                # 4. Backfill Sentiment (30 days)
-                try:
-                    await self._backfill_sentiment(symbol, persistence)
-                except Exception as e:
-                    logger.error(f"Sentiment backfill failed for {symbol}: {e}")
-                current_step += 1
-                task.progress = int(current_step / total_steps * 100)
-                db.commit()
-                await asyncio.sleep(3)
-
-            task.status = "completed"
+            # The OI step only logs that it is skipped, so it can never count as success
+            attempted_steps = total_steps - len(symbols)
+            task.status = "failed" if len(failed_steps) >= attempted_steps else "completed"
             task.progress = 100
+            task.error_message = "\n".join(failed_steps) or None
             db.commit()
-            logger.info(f"Backfill task {task_id} completed")
+            logger.info(
+                f"Backfill task {task_id} {task.status} with {len(failed_steps)} failed steps"
+            )
 
         except Exception as e:
             logger.error(f"Backfill task {task_id} failed: {e}")
+            db.rollback()
             task = db.query(BinanceBackfillTask).filter(
                 BinanceBackfillTask.id == task_id
             ).first()
@@ -131,14 +125,32 @@ class BinanceBackfillService:
         finally:
             db.close()
 
+    async def _fetch(self, fetch_func, *args, **kwargs):
+        """
+        Call an adapter method off the event loop, waiting out rate-limit pauses.
+        """
+        for _ in range(RATE_LIMIT_MAX_WAITS):
+            try:
+                return await asyncio.to_thread(fetch_func, *args, **kwargs)
+            except BinanceRateLimitError:
+                pause = self.adapter.rate_limited_for() + 1
+                logger.warning(f"Backfill rate limited, waiting {pause:.0f}s")
+                await asyncio.sleep(pause)
+        return await asyncio.to_thread(fetch_func, *args, **kwargs)
+
     async def _backfill_klines(self, symbol: str, period: str, persistence: ExchangeDataPersistence):
         """Backfill K-line data for a period"""
         logger.info(f"Backfilling klines for {symbol}/{period}")
-        klines = self.adapter.fetch_klines(symbol, period, limit=KLINE_BACKFILL_LIMIT)
+        klines = await self._fetch(
+            self.adapter.fetch_klines, symbol, period, limit=KLINE_BACKFILL_LIMIT
+        )
         if klines:
-            result = persistence.save_klines(klines)
+            result = await asyncio.to_thread(persistence.save_klines, klines)
             if period == '1m':
-                persistence.save_taker_volumes_from_klines(klines)
+                # Only fills minutes without trade data; WebSocket rows are kept
+                await asyncio.to_thread(
+                    persistence.fill_missing_taker_volumes_from_klines, klines
+                )
             logger.info(f"Klines backfill {symbol}/{period}: {result}")
 
     async def _backfill_oi(self, symbol: str, persistence: ExchangeDataPersistence):
@@ -156,46 +168,58 @@ class BinanceBackfillService:
     async def _backfill_funding(self, symbol: str, persistence: ExchangeDataPersistence):
         """Backfill Funding Rate history (365 days)"""
         logger.info(f"Backfilling funding for {symbol} ({FUNDING_BACKFILL_DAYS} days)")
-        all_funding = []
+        total = 0
         end_time = int(time.time() * 1000)
         start_time = end_time - (FUNDING_BACKFILL_DAYS * 24 * 60 * 60 * 1000)
 
         current_end = end_time
         while current_end > start_time:
-            funding_list = self.adapter.fetch_funding_history(
-                symbol, limit=1000, end_time=current_end
+            funding_list = await self._fetch(
+                self.adapter.fetch_funding_history,
+                symbol, limit=1000, end_time=current_end,
             )
             if not funding_list:
                 break
-            all_funding.extend(funding_list)
+            # Align to the minute so settlements share a row with live asset metrics
+            aligned = [
+                replace(f, timestamp=f.timestamp // 60_000 * 60_000)
+                for f in funding_list
+            ]
+            # Save page by page so a later failure keeps what was already fetched
+            await asyncio.to_thread(persistence.save_funding_rate_batch, aligned)
+            total += len(aligned)
             current_end = min(f.timestamp for f in funding_list) - 1
             await asyncio.sleep(0.5)
 
-        if all_funding:
-            result = persistence.save_funding_rate_batch(all_funding)
-            logger.info(f"Funding backfill {symbol}: {result}, total {len(all_funding)} records")
+        logger.info(f"Funding backfill {symbol}: {total} records")
 
     async def _backfill_sentiment(self, symbol: str, persistence: ExchangeDataPersistence):
         """Backfill Long/Short ratio history (30 days)"""
         logger.info(f"Backfilling sentiment for {symbol} ({SENTIMENT_BACKFILL_DAYS} days)")
-        all_sentiment = []
+        total = 0
         end_time = int(time.time() * 1000)
         start_time = end_time - (SENTIMENT_BACKFILL_DAYS * 24 * 60 * 60 * 1000)
 
         current_end = end_time
         while current_end > start_time:
-            sentiment_list = self.adapter.fetch_sentiment_history(
-                symbol, "5m", limit=500, end_time=current_end
-            )
+            try:
+                sentiment_list = await self._fetch(
+                    self.adapter.fetch_sentiment_history,
+                    symbol, "5m", limit=500, end_time=current_end,
+                )
+            except requests.exceptions.HTTPError as e:
+                # Binance rejects ranges older than its retention window
+                if total and getattr(e.response, "status_code", None) == 400:
+                    break
+                raise
             if not sentiment_list:
                 break
-            all_sentiment.extend(sentiment_list)
+            await asyncio.to_thread(persistence.save_sentiment_batch, sentiment_list)
+            total += len(sentiment_list)
             current_end = min(s.timestamp for s in sentiment_list) - 1
             await asyncio.sleep(0.5)
 
-        if all_sentiment:
-            result = persistence.save_sentiment_batch(all_sentiment)
-            logger.info(f"Sentiment backfill {symbol}: {result}, total {len(all_sentiment)} records")
+        logger.info(f"Sentiment backfill {symbol}: {total} records")
 
 
 # Singleton instance
