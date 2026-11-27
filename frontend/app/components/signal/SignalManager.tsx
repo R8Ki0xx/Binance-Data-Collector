@@ -737,7 +737,7 @@ export default function SignalManager() {
 
     /**
      * URL parameter support: #page-name?view=ID
-     * When navigating from Hyper AI created entity card, switch to pools tab
+     * When navigating from Pilot AI created entity card, switch to pools tab
      * and highlight/scroll to the specific pool.
      * Note: Parameters are in the hash (after #), not in search (before #).
      */

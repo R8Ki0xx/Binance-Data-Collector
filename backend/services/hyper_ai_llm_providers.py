@@ -1,5 +1,5 @@
 """
-Hyper AI LLM Provider Configuration
+Pilot AI LLM Provider Configuration
 
 Preset configurations for popular LLM providers with their base URLs and recommended models.
 Users can select a provider during onboarding or configure a custom endpoint.

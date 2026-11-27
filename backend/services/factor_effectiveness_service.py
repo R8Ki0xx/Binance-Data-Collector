@@ -13,7 +13,7 @@ Architecture:
     the standard quant definition. Supports force mode (full overwrite) for manual
     compute and incremental mode (skip existing dates) for daily cron.
   - _compute_symbol(): Computes ALL factors for one symbol. Reports per-factor progress.
-  - compute_single_factor(): Computes ONE factor across all symbols (Hyper AI tool).
+  - compute_single_factor(): Computes ONE factor across all symbols (Pilot AI tool).
 
 Performance history (2026-03):
   v1: One-shot _calc_metrics with scipy.spearmanr + pandas rolling IC per window.
@@ -115,7 +115,7 @@ class FactorEffectivenessService:
 
     def compute_single_factor(self, db: Session, exchange: str, factor_name: str) -> dict:
         """Public API: Compute one factor across all watchlist symbols.
-        Called by Hyper AI's compute_factor tool. Always force=True to ensure
+        Called by Pilot AI's compute_factor tool. Always force=True to ensure
         latest algorithm is applied (overwrites old data via ON CONFLICT).
         """
         import pandas as pd

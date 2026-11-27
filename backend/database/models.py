@@ -1437,9 +1437,9 @@ class BacktestTriggerLog(Base):
 
 
 # ============================================================================
-# Hyper AI - Main Agent for Full-Site AI Intelligence
+# Pilot AI - Main Agent for Full-Site AI Intelligence
 # ============================================================================
-# Hyper AI is the master agent that:
+# Pilot AI is the master agent that:
 # - Guides users through onboarding and profile setup
 # - Maintains user memory (preferences, decisions, lessons, insights)
 # - Orchestrates sub-agents (Prompt AI, Program AI, Signal AI, Attribution AI)
@@ -1449,9 +1449,9 @@ class BacktestTriggerLog(Base):
 
 class HyperAiProfile(Base):
     """
-    Hyper AI User Profile - Stores user trading preferences and LLM configuration.
+    Pilot AI User Profile - Stores user trading preferences and LLM configuration.
 
-    This is the core profile for Hyper AI, containing:
+    This is the core profile for Pilot AI, containing:
     - Trading style and risk preferences (collected during onboarding)
     - LLM provider configuration (API endpoint, key, model)
     - Onboarding status
@@ -1484,7 +1484,7 @@ class HyperAiProfile(Base):
 
     # Skill System: Controls which Skill modules are active for this user.
     # Skills are SKILL.md files in backend/skills/ that provide domain-specific
-    # workflow guidance to Hyper AI (e.g., strategy setup, diagnosis, market analysis).
+    # workflow guidance to Pilot AI (e.g., strategy setup, diagnosis, market analysis).
     # Format: JSON array of enabled skill names, e.g. ["prompt-strategy-setup", "market-analysis"]
     # NULL = all skills enabled (default for new/existing users)
     enabled_skills = Column(Text, nullable=True)
@@ -1496,7 +1496,7 @@ class HyperAiProfile(Base):
 
     # Suggested questions for welcome screen (lazy-updated cache)
     # Format: JSON array of 3 questions, e.g. ["How is my BTC Trader doing?", ...]
-    # Updated asynchronously when user visits Hyper AI page and cache > 6 hours old
+    # Updated asynchronously when user visits Pilot AI page and cache > 6 hours old
     suggested_questions = Column(Text, nullable=True)
     suggested_questions_at = Column(TIMESTAMP, nullable=True)
 
@@ -1506,7 +1506,7 @@ class HyperAiProfile(Base):
 
 class HyperAiMemory(Base):
     """
-    Hyper AI User Memory - Stores AI-extracted insights about the user.
+    Pilot AI User Memory - Stores AI-extracted insights about the user.
 
     Memory categories:
     - preference: User preferences (e.g., "likes trend following strategies")
@@ -1538,7 +1538,7 @@ class HyperAiMemory(Base):
 
 class HyperAiConversation(Base):
     """
-    Hyper AI Conversation Session - Tracks conversation history with compression support.
+    Pilot AI Conversation Session - Tracks conversation history with compression support.
 
     Compression mechanism:
     - When token count approaches 70% of context window, compression is triggered
@@ -1580,7 +1580,7 @@ class HyperAiConversation(Base):
 
 class HyperAiMessage(Base):
     """
-    Hyper AI Message - Individual messages in a conversation.
+    Pilot AI Message - Individual messages in a conversation.
 
     Stores full message details including:
     - Content and role (user/assistant/system/tool)

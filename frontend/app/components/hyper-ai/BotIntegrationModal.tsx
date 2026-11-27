@@ -137,7 +137,7 @@ export default function BotIntegrationModal({
               {isTelegram && displayUsername && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    {t('bot.telegram.howToChat', 'Click below to start chatting with Hyper AI:')}
+                    {t('bot.telegram.howToChat', 'Click below to start chatting with Pilot AI:')}
                   </p>
                   <a
                     href={`https://t.me/${displayUsername}`}
@@ -155,7 +155,7 @@ export default function BotIntegrationModal({
               {!isTelegram && displayAppId && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    {t('bot.discord.howToChat', 'Follow these steps to chat with Hyper AI:')}
+                    {t('bot.discord.howToChat', 'Follow these steps to chat with Pilot AI:')}
                   </p>
                   <a
                     href={`https://discord.com/oauth2/authorize?client_id=${displayAppId}&scope=bot&permissions=2048`}

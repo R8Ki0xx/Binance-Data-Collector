@@ -1,4 +1,4 @@
-# Hyper Alpha Arena Knowledge Base (Supplementary Reference)
+# QuantPilot Knowledge Base (Supplementary Reference)
 
 This document provides detailed workflows and examples. Core tool usage is defined in the system prompt.
 

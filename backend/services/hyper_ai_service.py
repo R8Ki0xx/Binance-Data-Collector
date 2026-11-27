@@ -1,7 +1,7 @@
 """
-Hyper AI Service - Main Agent for Full-Site AI Intelligence
+Pilot AI Service - Main Agent for Full-Site AI Intelligence
 
-Hyper AI is the master agent that:
+Pilot AI is the master agent that:
 - Guides users through onboarding to collect trading preferences
 - Maintains user profile and long-term memory across conversations
 - Orchestrates sub-agents (Prompt AI, Program AI, Signal AI, Attribution AI)
@@ -121,13 +121,13 @@ def _get_retry_delay(attempt: int) -> float:
 
 
 def load_system_prompt() -> str:
-    """Load the Hyper AI system prompt from markdown file."""
+    """Load the Pilot AI system prompt from markdown file."""
     try:
         with open(SYSTEM_PROMPT_PATH, 'r', encoding='utf-8') as f:
             return f.read()
     except Exception as e:
-        logger.error(f"Failed to load Hyper AI system prompt: {e}")
-        return "You are Hyper AI, an intelligent trading assistant."
+        logger.error(f"Failed to load Pilot AI system prompt: {e}")
+        return "You are Pilot AI, an intelligent trading assistant."
 
 
 def load_onboarding_prompt(lang: str = "en") -> str:
@@ -143,7 +143,7 @@ def load_onboarding_prompt(lang: str = "en") -> str:
         return DEFAULT_ONBOARDING_PROMPT_EN
 
 
-DEFAULT_ONBOARDING_PROMPT_EN = """You are Hyper AI, a friendly trading assistant helping a new user get started.
+DEFAULT_ONBOARDING_PROMPT_EN = """You are Pilot AI, a friendly trading assistant helping a new user get started.
 
 Your goal is to have a natural conversation to learn about the user's trading background and preferences.
 
@@ -157,7 +157,7 @@ Be warm, conversational, and helpful. Ask follow-up questions naturally.
 When you have enough information, let the user know they're all set to explore the system.
 """
 
-DEFAULT_ONBOARDING_PROMPT_ZH = """你是 Hyper AI，一个友好的交易助手，正在帮助新用户入门。
+DEFAULT_ONBOARDING_PROMPT_ZH = """你是 Pilot AI，一个友好的交易助手，正在帮助新用户入门。
 
 你的目标是通过自然的对话了解用户的交易背景和偏好。
 
@@ -689,7 +689,7 @@ def _execute_harnessed_tool_call(
     failure_tracker: ToolFailureTracker,
     llm_config: Dict[str, Any],
 ) -> Generator[str, None, str]:
-    """Execute a Hyper AI tool with runtime harness guardrails."""
+    """Execute a Pilot AI tool with runtime harness guardrails."""
     if failure_tracker.is_tripped(fn_name):
         tool_result = circuit_breaker_result(fn_name)
         meta = blocked_meta(fn_name, "Tool is temporarily unavailable after repeated infrastructure failures.")
@@ -1308,7 +1308,7 @@ def _build_insight_messages(
     )
 
     system_prompt = (
-        "You are Hyper AI inside Hyper Alpha Arena.\n"
+        "You are Pilot AI inside QuantPilot.\n"
         f"{language_instruction}"
         "You analyze market intelligence for a retail crypto trader.\n"
         "Use only the provided context.\n"

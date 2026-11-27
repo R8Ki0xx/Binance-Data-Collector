@@ -3,7 +3,7 @@
 This service intentionally keeps a single async connection loop to avoid
 thread leaks. It stores only the latest access token in SystemConfig so the
 client can recover across short restarts, but token refresh still depends on
-the user revisiting HAA.
+the user revisiting QuantPilot.
 """
 
 from __future__ import annotations

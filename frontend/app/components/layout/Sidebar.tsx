@@ -126,7 +126,7 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
   }
 
   const desktopNav = [
-    { label: t('hyperAi.title', 'Hyper AI'), page: 'hyper-ai', icon: Bot },
+    { label: t('hyperAi.title', 'Pilot AI'), page: 'hyper-ai', icon: Bot },
     { label: t('sidebar.dashboard'), page: 'comprehensive', icon: BarChart3 },
     { label: t('sidebar.aiTrader', 'AI Trader'), page: 'trader-management', icon: Ghost },
     { label: t('sidebar.prompts', 'Prompts'), page: 'prompt-management', icon: NotebookPen },
@@ -149,8 +149,8 @@ export default function Sidebar({ currentPage = 'comprehensive', onPageChange, o
         {/* Top: Brand */}
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center gap-2">
-            <img src="/static/logo_app.png" alt="Logo" className="h-7 w-7 object-contain flex-shrink-0" />
-            <span className="text-base font-bold">Hyper Alpha Arena</span>
+            <img src="/static/logo.svg" alt="Logo" className="h-7 w-7 object-contain flex-shrink-0" />
+            <span className="text-base font-bold">QuantPilot</span>
           </div>
         </div>
 

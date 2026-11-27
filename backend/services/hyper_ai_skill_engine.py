@@ -1,7 +1,7 @@
 """
-Hyper AI Skill Engine
+Pilot AI Skill Engine
 
-Manages the Skill system for Hyper AI. Skills are modular, file-based
+Manages the Skill system for Pilot AI. Skills are modular, file-based
 knowledge packages (SKILL.md files) that provide domain-specific workflow
 guidance to the AI. Inspired by Claude Code's Plugin/Skill architecture.
 

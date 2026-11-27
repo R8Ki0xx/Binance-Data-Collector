@@ -1,5 +1,5 @@
 """
-Hyper AI harness guardrails.
+Pilot AI harness guardrails.
 
 This module keeps runtime guardrails separate from tool implementations:
 - tool execution metadata for circuit-breaker decisions

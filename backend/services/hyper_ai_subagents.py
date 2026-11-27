@@ -1,5 +1,5 @@
 """
-Hyper AI Sub-agents - Tools for calling specialized AI assistants
+Pilot AI Sub-agents - Tools for calling specialized AI assistants
 
 Each sub-agent reuses existing AI assistant's conversation system:
 - call_prompt_ai: Prompt AI for trading prompt generation/optimization
@@ -8,7 +8,7 @@ Each sub-agent reuses existing AI assistant's conversation system:
 - call_attribution_ai: Attribution AI for trade analysis
 
 Sub-agents maintain their own conversation history in their respective tables.
-Hyper AI passes conversation_id to continue previous sessions.
+Pilot AI passes conversation_id to continue previous sessions.
 
 ARCHITECTURE NOTE: Sub-agent execution returns a Generator, not a string.
 The generator yields subagent_progress SSE events (forwarded to frontend via
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 # Sub-agent tool definitions in OpenAI format
-# Note: Sub-agents inherit Hyper AI's LLM configuration, no account_id needed
+# Note: Sub-agents inherit Pilot AI's LLM configuration, no account_id needed
 SUBAGENT_TOOLS = [
     {
         "type": "function",
@@ -309,7 +309,7 @@ def execute_call_prompt_ai(
             return json.dumps({
                 "subagent": "prompt_ai",
                 "status": "failed",
-                "error": "Hyper AI LLM not configured."
+                "error": "Pilot AI LLM not configured."
             })
 
         generator = generate_prompt_with_ai_stream(
@@ -357,7 +357,7 @@ def execute_call_program_ai(
             return json.dumps({
                 "subagent": "program_ai",
                 "status": "failed",
-                "error": "Hyper AI LLM not configured."
+                "error": "Pilot AI LLM not configured."
             })
 
         generator = generate_program_with_ai_stream(
@@ -404,7 +404,7 @@ def execute_call_signal_ai(
             return json.dumps({
                 "subagent": "signal_ai",
                 "status": "failed",
-                "error": "Hyper AI LLM not configured."
+                "error": "Pilot AI LLM not configured."
             })
 
         generator = generate_signal_with_ai_stream(
@@ -450,7 +450,7 @@ def execute_call_attribution_ai(
             return json.dumps({
                 "subagent": "attribution_ai",
                 "status": "failed",
-                "error": "Hyper AI LLM not configured."
+                "error": "Pilot AI LLM not configured."
             })
 
         generator = generate_attribution_analysis_stream(

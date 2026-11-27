@@ -1,5 +1,5 @@
 """
-Hyper AI Memory Service - User insights and memory management
+Pilot AI Memory Service - User insights and memory management
 
 This module provides:
 1. Memory storage and retrieval with automatic system prompt injection

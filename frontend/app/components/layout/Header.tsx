@@ -14,7 +14,7 @@ interface HeaderProps {
   showAccountSelector?: boolean
 }
 
-export default function Header({ title = 'Hyper Alpha Arena' }: HeaderProps) {
+export default function Header({ title = 'QuantPilot' }: HeaderProps) {
   return (
     <header className="w-full border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="w-full py-2 px-3 md:px-4 flex items-center justify-between">

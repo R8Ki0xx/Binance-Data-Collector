@@ -2078,7 +2078,7 @@ export default function TradingViewChart({
 
       {/* 自定义水印 */}
       <div className="absolute bottom-2 right-2 text-xs text-muted-foreground/30 pointer-events-none select-none">
-        Hyper Alpha Arena
+        QuantPilot
       </div>
 
 

@@ -196,7 +196,7 @@ export default function HyperliquidWalletSection({
     const stepMessages: Record<string, string> = {
       connecting: t('wallet.setup.connecting', 'Connecting browser wallet...'),
       checking_auth: t('wallet.setup.checkingAuth', 'Checking trading authorization...'),
-      signing_auth: t('wallet.setup.signingAuth', 'Please approve Hyper Alpha Arena trading authorization in your wallet...'),
+      signing_auth: t('wallet.setup.signingAuth', 'Please approve QuantPilot trading authorization in your wallet...'),
       signing_agent: t('wallet.setup.signingAgent', 'Please approve API Wallet creation in your wallet...'),
       saving: t('wallet.setup.saving', 'Saving wallet configuration...'),
       done: t('wallet.setup.done', 'Wallet setup complete!'),
@@ -367,7 +367,7 @@ export default function HyperliquidWalletSection({
 
             <p className="text-[10px] text-muted-foreground text-center">
               {environment === 'mainnet'
-                ? t('wallet.setup.mainnetHint', 'Connects your browser wallet, authorizes Hyper Alpha Arena trading tools, and creates a secure API Wallet.')
+                ? t('wallet.setup.mainnetHint', 'Connects your browser wallet, authorizes QuantPilot trading tools, and creates a secure API Wallet.')
                 : t('wallet.setup.testnetHint', 'Connects your browser wallet and creates a secure API Wallet for testnet trading.')}
             </p>
           </div>

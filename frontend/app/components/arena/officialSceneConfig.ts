@@ -13,7 +13,7 @@ export const OFFICIAL_SCENE_CONFIG: SceneConfig = {
     { id: 'mmtfs6zku1k6', src: '/static/arena-sprites/assets/office/Desk, Ornate.png', label: 'Desk (top)', x: 237, y: 97, scale: 2, cropX: 0, cropY: 0, cropW: 160, cropH: 64 },
     { id: 'mmtfsqhmvr22', src: '/static/arena-sprites/assets/furniture/shelves-brown.png', label: 'Bookshelf', x: 393, y: 0, scale: 1.4, cropX: 0, cropY: 0, cropW: 64, cropH: 96 },
     { id: 'mmu8ndzj8xvb', src: '__widget_clock__', label: 'Live Clock', x: 264, y: 24, scale: 1.8, cropX: 0, cropY: 0, cropW: 80, cropH: 14 },
-    { id: 'mmu9x2c60r21', src: '/static/arena-sprites/assets/items/sign-hyper-arena.png', label: 'Hyper Alpha Arena', x: 90, y: 21, scale: 1.4, cropX: 0, cropY: 0, cropW: 124, cropH: 30 },
+    { id: 'mmu9x2c60r21', src: '/static/arena-sprites/assets/items/sign-hyper-arena.png', label: 'QuantPilot', x: 90, y: 21, scale: 1.4, cropX: 0, cropY: 0, cropW: 124, cropH: 30 },
     { id: 'mmubrxujeoj4', src: '/static/arena-sprites/assets/items/water-cooler-1.png', label: 'Water Cooler', x: 83, y: 48, scale: 1.3, cropX: 0, cropY: 0, cropW: 32, cropH: 64 },
     { id: 'mmug8n5tf0gs', src: '/static/arena-sprites/assets/items/chair-black.png', label: 'Chair Black', x: 136, y: 56, scale: 1.7, cropX: 0, cropY: 0, cropW: 18, cropH: 42 },
     { id: 'mmug94ebdzsm', src: '/static/arena-sprites/assets/items/office-plant.png', label: 'Office Plant', x: 57, y: 41, scale: 1, cropX: 0, cropY: 0, cropW: 32, cropH: 32 },

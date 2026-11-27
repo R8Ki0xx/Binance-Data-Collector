@@ -661,14 +661,14 @@ def generate_prompt_with_ai_stream(
 
     # Get LLM config: either from llm_config param or from account object
     if llm_config:
-        # Use provided llm_config (e.g., from Hyper AI sub-agent call)
+        # Use provided llm_config (e.g., from Pilot AI sub-agent call)
         api_config = {
             "base_url": llm_config.get("base_url"),
             "api_key": llm_config.get("api_key"),
             "model": llm_config.get("model"),
             "api_format": llm_config.get("api_format", "openai")
         }
-        account_name = "Hyper AI"
+        account_name = "Pilot AI"
     elif account:
         # Original logic: use account object
         api_config = {

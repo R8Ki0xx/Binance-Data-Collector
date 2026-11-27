@@ -157,7 +157,7 @@ async def update_wallet_tracking_runtime(payload: WalletTrackingRuntimeRequest):
 
 @router.post("/wallet-tracking/token")
 async def sync_wallet_tracking_token(payload: WalletTrackingTokenRequest):
-    """Sync the latest HAA access token for future reconnects."""
+    """Sync the latest QuantPilot access token for future reconnects."""
     await hyper_insight_wallet_service.sync_access_token(payload.access_token)
     return {"success": True}
 

@@ -211,21 +211,21 @@
     "loadingData": "Loading Hyperliquid data...",
     "noAccountConfigured": "No Hyperliquid account configured",
     "insight": {
-      "aiToggle": "Hyper AI Auto Insight",
+      "aiToggle": "Pilot AI Auto Insight",
       "aiCostHint": "Extra token usage. Stops when you leave this page.",
       "exchange": "Exchange",
       "symbol": "Symbol",
       "chartInterval": "Chart Interval",
       "timelineTitle": "Price and Event Timeline",
-      "biasTitle": "Hyper AI Auto Insight",
+      "biasTitle": "Pilot AI Auto Insight",
       "loading": "Building market context...",
-      "shortTermBias": "Hyper AI Auto Insight",
-      "aiDisabledHint": "Turn on Hyper AI Auto Insight to enable event-triggered analysis.",
+      "shortTermBias": "Pilot AI Auto Insight",
+      "aiDisabledHint": "Turn on Pilot AI Auto Insight to enable event-triggered analysis.",
       "monitoringTitle": "Monitoring for fresh news and flow events",
       "monitoringHint": "When a relevant event arrives, AI will generate a new read instead of constantly polling for conclusions.",
       "thinkingTitle": "AI is reading the new event",
       "thinkingHint": "The latest news and flow shift just triggered a new interpretation pass.",
-      "unavailableTitle": "Hyper AI result is not available yet",
+      "unavailableTitle": "Pilot AI result is not available yet",
       "unavailableHint": "This card no longer shows any fallback conclusion. It waits for a real model response only.",
       "contextHint": "Current analysis context includes the selected exchange, symbol, chart interval, the latest 4 hours of K-line data, recent news, and large-order zones.",
       "contextCandles": "Candles",
@@ -249,9 +249,9 @@
       "totalInflow": "Total Inflow",
       "totalOutflow": "Total Outflow",
       "liveInsight": "Live Insight",
-      "aiFailed": "Hyper AI analysis failed.",
-      "aiEmpty": "Hyper AI returned no readable content.",
-      "aiInvalidFormat": "Hyper AI returned an invalid insight format.",
+      "aiFailed": "Pilot AI analysis failed.",
+      "aiEmpty": "Pilot AI returned no readable content.",
+      "aiInvalidFormat": "Pilot AI returned an invalid insight format.",
       "aiRefreshing": "Reading a new market event...",
       "probability": "Probability",
       "bearish": "Bearish",
@@ -481,10 +481,10 @@
     "loading": "Loading...",
     "walletTracking": {
       "title": "Wallet Tracking",
-      "description": "Connect Hyper Insight tracked wallets as a real-time signal source inside HAA.",
+      "description": "Connect Hyper Insight tracked wallets as a real-time signal source inside QuantPilot.",
       "sourceTypeLabel": "Wallet Tracking",
       "connectionStatus": "Connection Status",
-      "connectionHint": "Enable sync here and HAA will connect to Hyper Insight for your tracked wallets.",
+      "connectionHint": "Enable sync here and QuantPilot will connect to Hyper Insight for your tracked wallets.",
       "notConnected": "Not Connected",
       "connected": "Connected",
       "connectedNoWallets": "Connected · No tracked wallets",
@@ -507,7 +507,7 @@
       "disableFailed": "Failed to disable wallet tracking integration",
       "manageOnInsight": "Manage on Hyper Insight",
       "createWalletPool": "Create Wallet Pool",
-      "inlineHint": "Connect first. Once tracked wallets appear, choose which ones should enter HAA wallet signal pools.",
+      "inlineHint": "Connect first. Once tracked wallets appear, choose which ones should enter QuantPilot wallet signal pools.",
       "addresses": "Tracked Wallets",
       "eventTypes": "Event Types",
       "eventTypePositionChange": "Position Change",
@@ -833,7 +833,7 @@
   "trader": {
     "title": "AI Trader Management",
     "subtitle": "Manage your AI traders and configure trading strategies",
-    "welcomeTitle": "Welcome to Hyper Alpha Arena!",
+    "welcomeTitle": "Welcome to QuantPilot!",
     "welcomeSubtitle": "Let's set up your first AI trader",
     "setupTitle": "Setup Your AI Trader",
     "setupDesc": "We've created a default AI trader for you. To start trading, you need to:",
@@ -1147,12 +1147,12 @@
       "inProgress": "Setting up...",
       "connecting": "Connecting browser wallet...",
       "checkingAuth": "Checking trading authorization...",
-      "signingAuth": "Please approve Hyper Alpha Arena trading authorization in your wallet...",
+      "signingAuth": "Please approve QuantPilot trading authorization in your wallet...",
       "signingAgent": "Please approve API Wallet creation in your wallet...",
       "saving": "Saving wallet configuration...",
       "done": "Wallet setup complete!",
       "rejected": "Signing rejected by user",
-      "mainnetHint": "Connects your browser wallet, authorizes Hyper Alpha Arena trading tools, and creates a secure API Wallet.",
+      "mainnetHint": "Connects your browser wallet, authorizes QuantPilot trading tools, and creates a secure API Wallet.",
       "testnetHint": "Connects your browser wallet and creates a secure API Wallet for testnet trading."
     },
     "error": {
@@ -1711,12 +1711,12 @@
     "resetAt": "Resets at"
   },
   "hyperAi": {
-    "title": "Hyper AI",
+    "title": "Pilot AI",
     "newChat": "New Chat",
     "messages": "messages",
     "inputPlaceholder": "Type a message...",
     "config": "AI Config",
-    "configTitle": "Hyper AI Config",
+    "configTitle": "Pilot AI Config",
     "skills": "Skills",
     "skillsLoading": "Loading...",
     "skillActive": "Active",
@@ -1738,9 +1738,9 @@
     "telegramBot": "Telegram Bot",
     "discordBot": "Discord Bot",
     "memory": {
-      "title": "What Hyper AI Remembered",
+      "title": "What Pilot AI Remembered",
       "button": "Memory",
-      "empty": "No memories yet. As you chat with Hyper AI, it will remember key insights from your conversations.",
+      "empty": "No memories yet. As you chat with Pilot AI, it will remember key insights from your conversations.",
       "items": "{{count}} memories",
       "source": "Source",
       "importance": "Importance",
@@ -1752,8 +1752,8 @@
         "context": "Context"
       }
     },
-    "welcomeWithName": "Hello, {{name}}! I'm Hyper AI, your personal trading assistant.",
-    "welcomeNoName": "Hello! I'm Hyper AI, the intelligent assistant for Hyper Alpha Arena.",
+    "welcomeWithName": "Hello, {{name}}! I'm Pilot AI, your personal trading assistant.",
+    "welcomeNoName": "Hello! I'm Pilot AI, the intelligent assistant for QuantPilot.",
     "welcomeCapabilities": "I can help you:",
     "capability1": "Understand system features and usage",
     "capability2": "Generate and optimize AI trading strategies",
@@ -1799,8 +1799,8 @@
     "hideContent": "Hide content",
     "viewInPage": "View in page",
     "onboarding": {
-      "welcome": "Welcome to Hyper Alpha Arena",
-      "configureAi": "Configure Hyper AI to get started",
+      "welcome": "Welcome to QuantPilot",
+      "configureAi": "Configure Pilot AI to get started",
       "provider": "AI Provider",
       "selectProvider": "Select provider",
       "baseUrl": "Base URL",
@@ -1816,23 +1816,23 @@
       "connectionSuccess": "Connection successful!",
       "testing": "Testing...",
       "connected": "Connected!",
-      "findMeAt": "You can find me anytime in Hyper AI.",
+      "findMeAt": "You can find me anytime in Pilot AI.",
       "enterSystem": "Enter System",
       "gettingToKnow": "Getting to know you",
       "gettingToKnowQuestions": "Getting to know you (3-4 questions)",
       "typeMessage": "Type a message...",
-      "chatHint": "Chat with Hyper AI to personalize your experience",
+      "chatHint": "Chat with Pilot AI to personalize your experience",
       "chatError": "Sorry, something went wrong. Please try again.",
-      "defaultGreeting": "Hello! I'm Hyper AI. Before we begin, I'd like to learn about your trading background so I can better assist you. Do you have experience with cryptocurrency trading?",
+      "defaultGreeting": "Hello! I'm Pilot AI. Before we begin, I'd like to learn about your trading background so I can better assist you. Do you have experience with cryptocurrency trading?",
       "profileSaved": "Your profile has been saved!"
     }
   },
   "bot": {
     "telegram": {
-      "howToChat": "Click below to start chatting with Hyper AI:",
+      "howToChat": "Click below to start chatting with Pilot AI:",
       "openChat": "Open Chat in Telegram"
     },
-    "telegramDesc": "Connect a Telegram bot to chat with Hyper AI from Telegram.",
+    "telegramDesc": "Connect a Telegram bot to chat with Pilot AI from Telegram.",
     "status": "Status",
     "tokenLabel": "Bot Token",
     "tokenHint": "Get your bot token from @BotFather on Telegram",
@@ -1869,7 +1869,7 @@
     "noSignalPools": "No signal pools configured.",
     "discord": {
       "name": "Discord Bot",
-      "desc": "Connect a Discord bot to chat with Hyper AI from Discord DM.",
+      "desc": "Connect a Discord bot to chat with Pilot AI from Discord DM.",
       "step1Desc": "Open Discord Developer Portal and create a new Application:",
       "openPortal": "Open",
       "step1a": "Click \"New Application\" and give it a name",
@@ -1882,7 +1882,7 @@
       "intentNote": "Without this, the bot cannot read your messages in DM.",
       "intentDone": "I've enabled it",
       "step3Desc": "Now paste your bot token below:",
-      "howToChat": "Follow these steps to chat with Hyper AI:",
+      "howToChat": "Follow these steps to chat with Pilot AI:",
       "addToServer": "Add Bot to Your Server",
       "dmStep1": "Click the link above to add the bot to any server",
       "dmStep2": "In Discord, find the bot in the server member list",
@@ -2014,7 +2014,7 @@
       "noPositions": "No positions"
     },
     "hyperAI": {
-      "tooltip": "Chat with Hyper AI"
+      "tooltip": "Chat with Pilot AI"
     }
   }
 }

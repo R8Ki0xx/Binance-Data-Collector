@@ -79,7 +79,7 @@ interface Order { id: number; order_no: string; symbol: string; name: string; ma
 interface Trade { id: number; order_id: number; account_id: number; symbol: string; name: string; market: string; side: string; price: number; quantity: number; commission: number; trade_time: string }
 
 const PAGE_TITLES: Record<string, string> = {
-  'hyper-ai': 'Hyper AI',
+  'hyper-ai': 'Pilot AI',
   comprehensive: 'Dashboard',
   'system-logs': 'System Logs',
   'prompt-management': 'Prompt Templates',
@@ -115,7 +115,7 @@ function App() {
    * - Shareable links (e.g., /#prompts)
    * - Browser back/forward navigation
    * - Page refresh returns to same page
-   * - Hyper AI can direct users to specific pages via hash
+   * - Pilot AI can direct users to specific pages via hash
    *
    * IMPORTANT: All page navigation should use this function, not setCurrentPage directly.
    */
@@ -124,20 +124,20 @@ function App() {
     window.location.hash = page
   }, [])
 
-  // Hyper AI states - initialization happens during splash
+  // Pilot AI states - initialization happens during splash
   const [showSplash, setShowSplash] = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [initComplete, setInitComplete] = useState(false)
   const initStartedRef = useRef(false)
 
-  // Check Hyper AI configuration during splash phase
+  // Check Pilot AI configuration during splash phase
   const checkHyperAiConfig = useCallback(async () => {
     try {
       const res = await fetch('/api/hyper-ai/profile')
       const data = await res.json()
       return !data.llm_configured
     } catch (e) {
-      console.error('Failed to check Hyper AI config:', e)
+      console.error('Failed to check Pilot AI config:', e)
       return false
     }
   }, [])
@@ -618,7 +618,7 @@ function App() {
     return <SplashScreen onComplete={handleSplashComplete} isReady={isDataReady} />
   }
 
-  // Show onboarding if Hyper AI not configured
+  // Show onboarding if Pilot AI not configured
   if (showOnboarding) {
     return (
       <HyperAiOnboarding

@@ -1,5 +1,5 @@
 /**
- * i18n configuration for Hyper Alpha Arena
+ * i18n configuration for QuantPilot
  * - Default language: English
  * - Auto-detect browser language (switch to Chinese if zh-*)
  * - Persist user's manual selection to localStorage

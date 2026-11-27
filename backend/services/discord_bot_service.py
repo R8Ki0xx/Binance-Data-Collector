@@ -3,7 +3,7 @@
 Architecture:
 - Uses discord.py library (async, Gateway-based)
 - Maintains persistent WebSocket connection to Discord
-- Routes DM messages to Hyper AI service for processing
+- Routes DM messages to Pilot AI service for processing
 - Sends AI responses back to Discord DM
 """
 import asyncio

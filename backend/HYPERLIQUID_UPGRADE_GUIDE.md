@@ -2,12 +2,12 @@
 
 ## Overview
 
-This guide walks through the database upgrade process for integrating Hyperliquid perpetual contract trading into Hyper Alpha Arena.
+This guide walks through the database upgrade process for integrating Hyperliquid perpetual contract trading into QuantPilot.
 
 ## Prerequisites
 
 - Python 3.11+ with virtual environment activated
-- Existing Hyper Alpha Arena installation
+- Existing QuantPilot installation
 - Backup of important data (Trader API keys)
 
 ## Upgrade Steps
@@ -59,7 +59,7 @@ python database/upgrade_for_hyperliquid.py
 **Expected output:**
 ```
 ======================================================================
-Hyper Alpha Arena - Database Upgrade for Hyperliquid
+QuantPilot - Database Upgrade for Hyperliquid
 ======================================================================
 
 Step 1: Exporting trader configurations...
@@ -330,4 +330,4 @@ If you encounter issues not covered in this guide:
 
 **Version:** 1.0
 **Date:** 2025-11-03
-**Author:** Hyper Alpha Arena Development Team
+**Author:** QuantPilot Development Team

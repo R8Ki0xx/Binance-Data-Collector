@@ -135,7 +135,7 @@ def enqueue_system_event(
 
 def _format_event_message(event_type: str, data: Dict[str, Any]) -> str:
     """Format event data into human-readable message."""
-    header = "【🤖 Hyper AI Notification】\n\n"
+    header = "【🤖 Pilot AI Notification】\n\n"
 
     if event_type == "signal_triggered":
         pool_name = data.get('pool_name', 'Unknown')

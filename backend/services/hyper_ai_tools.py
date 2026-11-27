@@ -1,5 +1,5 @@
 """
-Hyper AI Tools - Tools for Hyper AI main agent
+Pilot AI Tools - Tools for Pilot AI main agent
 
 Provides tools for:
 - System overview and diagnostics
@@ -2759,7 +2759,7 @@ def execute_web_search(db: Session, query: str, max_results: int = 5) -> str:
     if not api_key:
         return json.dumps({
             "error": "Web search is not configured. The user needs to set up their Tavily API key.",
-            "setup_guide": "Go to Hyper AI page → right panel → Tools section → click Tavily Web Search → enter API key.",
+            "setup_guide": "Go to Pilot AI page → right panel → Tools section → click Tavily Web Search → enter API key.",
             "get_url": "https://tavily.com"
         })
 
@@ -2876,7 +2876,7 @@ def execute_hyper_ai_tool(
     db: Session, tool_name: str, arguments: Dict[str, Any],
     user_id: int = 1, api_config: Optional[Dict[str, Any]] = None
 ) -> str:
-    """Execute a Hyper AI tool by name."""
+    """Execute a Pilot AI tool by name."""
     try:
         if tool_name == "get_system_overview":
             return execute_get_system_overview(db)

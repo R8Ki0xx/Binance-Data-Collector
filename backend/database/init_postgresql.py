@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 PostgreSQL database initialization script
-Automatically creates databases and tables for Hyper Alpha Arena
+Automatically creates databases and tables for QuantPilot
 """
 
 import sys
@@ -258,7 +258,7 @@ def verify_setup():
 def main():
     """Main initialization function"""
     logger.info("=" * 60)
-    logger.info("Hyper Alpha Arena - PostgreSQL Initialization")
+    logger.info("QuantPilot - PostgreSQL Initialization")
     logger.info("=" * 60)
 
     # Step 1: Create user and databases

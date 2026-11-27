@@ -70,7 +70,7 @@ export default function PromptManager() {
 
   /**
    * Initial view ID from URL parameter: #prompt-management?view=ID
-   * Parsed once at component mount to handle deep linking from Hyper AI.
+   * Parsed once at component mount to handle deep linking from Pilot AI.
    */
   const initialViewIdRef = useRef<number | null>((() => {
     const hash = window.location.hash
@@ -129,7 +129,7 @@ export default function PromptManager() {
       setTemplates(data.templates)
       setBindings(data.bindings)
 
-      // Check for initial view ID from URL (deep link from Hyper AI)
+      // Check for initial view ID from URL (deep link from Pilot AI)
       const initialViewId = initialViewIdRef.current
       const effectiveSelectedId = initialViewId ?? selectedId
 

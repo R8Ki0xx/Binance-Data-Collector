@@ -190,7 +190,7 @@ export default function ProgramTrader() {
 
     /**
      * URL parameter support: #page-name?view=ID
-     * When navigating from Hyper AI created entity card, auto-select the specific program.
+     * When navigating from Pilot AI created entity card, auto-select the specific program.
      * Note: Parameters are in the hash (after #), not in search (before #).
      */
     const hash = window.location.hash

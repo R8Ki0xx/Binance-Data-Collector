@@ -562,7 +562,7 @@ name=RSI21(id=5) | period=1h | expr=RSI(close, 21) | desc=RSI with 21-period loo
 | `REALIZED_VOL30` | Realized volatility over 30 periods |
 | `HIGH_LOW_RANGE` | (High - Low) / Close |
 
-Custom factors created in the Factor Library also work. Use the `query_factors` tool (in Prompt AI or Hyper AI) to see all available factor names.
+Custom factors created in the Factor Library also work. Use the `query_factors` tool (in Prompt AI or Pilot AI) to see all available factor names.
 
 ### Example Usage
 

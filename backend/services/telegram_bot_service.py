@@ -4,7 +4,7 @@ Telegram Bot Service - Handle Telegram bot lifecycle and message routing.
 Architecture:
 - Uses python-telegram-bot library (async)
 - Uses Long Polling mode (no public HTTPS required, works on localhost)
-- Routes messages to Hyper AI service for processing
+- Routes messages to Pilot AI service for processing
 - Sends AI responses back to Telegram chat
 """
 import asyncio
@@ -356,7 +356,7 @@ async def _process_polling_message(token: str, chat_id: int, text: str, user: di
 
         if not conv:
             conv = HyperAiConversation(
-                title="Hyper AI Bot",
+                title="Pilot AI Bot",
                 is_bot_conversation=True
             )
             db_session.add(conv)
@@ -405,7 +405,7 @@ async def _process_polling_message(token: str, chat_id: int, text: str, user: di
                     data = json.loads(data_str)
                     if event_type == "tool_call" and data.get("name"):
                         label = get_tool_label(data["name"], lang)
-                        msg = f"【🤖Hyper AI】{label}..."
+                        msg = f"【🤖Pilot AI】{label}..."
                         asyncio.run_coroutine_threadsafe(
                             send_telegram_message(token, chat_id, msg), loop
                         )

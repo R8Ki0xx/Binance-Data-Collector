@@ -1,4 +1,4 @@
-# Multi-stage build for Hyper Alpha Arena
+# Multi-stage build for QuantPilot
 FROM node:18-alpine AS frontend-builder
 
 # Build frontend

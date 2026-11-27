@@ -1,5 +1,5 @@
 /**
- * HyperAiPage - Independent page for Hyper AI (three-column layout)
+ * HyperAiPage - Independent page for Pilot AI (three-column layout)
  * Left: Conversation list
  * Center: Chat area
  * Right: Config panel
@@ -199,7 +199,7 @@ function MemoryModal({
           <div className="flex items-center gap-2">
             <Brain className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">
-              {t('hyperAi.memory.title', 'What Hyper AI Remembered')}
+              {t('hyperAi.memory.title', 'What Pilot AI Remembered')}
             </h2>
             {memories.length > 0 && (
               <span className="text-xs text-muted-foreground ml-2">
@@ -369,7 +369,7 @@ function LLMConfigModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="w-full max-w-md bg-background rounded-lg shadow-xl p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t('hyperAi.configTitle', 'Hyper AI Config')}</h2>
+          <h2 className="text-lg font-semibold">{t('hyperAi.configTitle', 'Pilot AI Config')}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-4 h-4" />
           </Button>
@@ -533,8 +533,8 @@ function WelcomeMessage({
   }, [])
 
   const greeting = nickname
-    ? t('hyperAi.welcomeWithName', { name: nickname, defaultValue: `你好，${nickname}！我是 Hyper AI，你的专属交易助手。` })
-    : t('hyperAi.welcomeNoName', '你好！我是 Hyper AI，Hyper Alpha Arena 的智能助手。')
+    ? t('hyperAi.welcomeWithName', { name: nickname, defaultValue: `你好，${nickname}！我是 Pilot AI，你的专属交易助手。` })
+    : t('hyperAi.welcomeNoName', '你好！我是 Pilot AI，QuantPilot 的智能助手。')
 
   // Default suggestions for new users (follows i18n)
   const defaultSuggestions = [
@@ -1281,7 +1281,7 @@ export default function HyperAiPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium flex items-center gap-1.5">
               <Settings className="w-4 h-4 shrink-0" />
-              {t('hyperAi.configTitle', 'Hyper AI Config')}
+              {t('hyperAi.configTitle', 'Pilot AI Config')}
             </h3>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowConfigModal(true)}>
               <Pencil className="w-3.5 h-3.5" />
@@ -1820,7 +1820,7 @@ const MessageBubble = memo(function MessageBubble({
               remarkPlugins={[remarkGfm]}
               components={{
                 /**
-                 * Custom link renderer for Hyper AI chat:
+                 * Custom link renderer for Pilot AI chat:
                  * - Internal hash links (e.g., /#trader-management) open in new tab
                  *   so the chat conversation is not interrupted
                  * - External links also open in new tab with security attributes

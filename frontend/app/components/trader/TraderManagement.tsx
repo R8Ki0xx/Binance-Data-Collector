@@ -13,7 +13,7 @@ export default function TraderManagement() {
 
   /**
    * Initial view ID from URL parameter: #trader-management?view=ID
-   * Parsed once at component mount to handle deep linking from Hyper AI.
+   * Parsed once at component mount to handle deep linking from Pilot AI.
    */
   const initialViewIdRef = useRef<number | null>((() => {
     const hash = window.location.hash
@@ -38,7 +38,7 @@ export default function TraderManagement() {
       const accountList = await getAccounts()
       setAccounts(accountList)
 
-      // Check for initial view ID from URL (deep link from Hyper AI)
+      // Check for initial view ID from URL (deep link from Pilot AI)
       const initialViewId = initialViewIdRef.current
       const effectiveSelectedId = initialViewId ?? selectedAccountId
 
@@ -85,7 +85,7 @@ export default function TraderManagement() {
     return (
       <div className="h-full w-full overflow-hidden flex flex-col gap-4 p-6">
         <div className="flex-shrink-0">
-          <h1 className="text-2xl font-bold">{t('trader.welcomeTitle', 'Welcome to Hyper Alpha Arena!')}</h1>
+          <h1 className="text-2xl font-bold">{t('trader.welcomeTitle', 'Welcome to QuantPilot!')}</h1>
           <p className="text-muted-foreground">{t('trader.welcomeSubtitle', "Let's set up your first AI trader")}</p>
         </div>
 

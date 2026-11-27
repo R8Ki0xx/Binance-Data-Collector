@@ -1,5 +1,5 @@
 """
-Hyper AI Routes - API endpoints for Hyper AI main agent
+Pilot AI Routes - API endpoints for Pilot AI main agent
 
 Endpoints:
 - GET  /api/hyper-ai/providers - List available LLM providers
@@ -38,7 +38,7 @@ from services.hyper_ai_service import (
 from services.hyper_ai_llm_providers import get_all_providers, get_provider
 from services.ai_stream_service import get_buffer_manager
 
-router = APIRouter(prefix="/api/hyper-ai", tags=["Hyper AI"])
+router = APIRouter(prefix="/api/hyper-ai", tags=["Pilot AI"])
 
 
 # Request/Response models
@@ -345,7 +345,7 @@ def get_messages(
 @router.post("/chat")
 def start_chat(request: ChatRequest, db: Session = Depends(get_db)):
     """
-    Start a chat with Hyper AI.
+    Start a chat with Pilot AI.
     Returns task_id for polling via /api/ai-stream/{task_id}.
 
     mode="onboarding" uses a special prompt for profile collection.
@@ -376,7 +376,7 @@ def start_chat(request: ChatRequest, db: Session = Depends(get_db)):
 
 @router.post("/confirm-tool")
 def confirm_tool(request: ConfirmationRequest):
-    """Submit a runtime checkpoint response for a pending Hyper AI tool call."""
+    """Submit a runtime checkpoint response for a pending Pilot AI tool call."""
     manager = get_buffer_manager()
     accepted = manager.submit_confirmation(
         request.task_id,

@@ -211,7 +211,7 @@ def verify_migration():
 def main():
     """Run database migration"""
     logger.info("=" * 60)
-    logger.info("Hyper Alpha Arena - Hyperliquid Database Migration")
+    logger.info("QuantPilot - Hyperliquid Database Migration")
     logger.info("=" * 60)
     logger.info(f"Database: {DATABASE_URL}\n")
 

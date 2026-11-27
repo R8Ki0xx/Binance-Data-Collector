@@ -1,5 +1,5 @@
 /**
- * HyperAiOnboarding - Full-screen onboarding overlay for Hyper AI setup
+ * HyperAiOnboarding - Full-screen onboarding overlay for Pilot AI setup
  * Step 1: LLM Provider configuration
  * Step 2: AI connectivity test + chat for user profile
  * Step 3: Completion message
@@ -144,15 +144,15 @@ export default function HyperAiOnboarding({ onComplete, onSkip }: HyperAiOnboard
         {/* Header */}
         <div className="text-center space-y-2">
           <img
-            src="/static/arena_logo_app_small.png"
-            alt="Hyper Alpha Arena"
+            src="/static/logo.svg"
+            alt="QuantPilot"
             className="w-16 h-16 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold">
-            {t('hyperAi.onboarding.welcome', 'Welcome to Hyper Alpha Arena')}
+            {t('hyperAi.onboarding.welcome', 'Welcome to QuantPilot')}
           </h1>
           <p className="text-muted-foreground">
-            {t('hyperAi.onboarding.configureAi', 'Configure Hyper AI to get started')}
+            {t('hyperAi.onboarding.configureAi', 'Configure Pilot AI to get started')}
           </p>
         </div>
 
@@ -334,7 +334,7 @@ function ChatStep({ onSkip, onComplete }: { onSkip: () => void; onComplete: () =
       setMessages([{
         role: 'assistant',
         content: t('hyperAi.onboarding.defaultGreeting',
-          'Hello! I\'m Hyper AI. Before we begin, I\'d like to learn about your trading background. Do you have experience with cryptocurrency trading?')
+          'Hello! I\'m Pilot AI. Before we begin, I\'d like to learn about your trading background. Do you have experience with cryptocurrency trading?')
       }])
     } finally {
       setLoading(false)
@@ -431,7 +431,7 @@ function ChatStep({ onSkip, onComplete }: { onSkip: () => void; onComplete: () =
               <Bot className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-semibold">Hyper AI</h2>
+              <h2 className="font-semibold">Pilot AI</h2>
               <p className="text-xs text-muted-foreground">
                 {t('hyperAi.onboarding.gettingToKnowQuestions', 'Getting to know you (3-4 questions)')}
               </p>
@@ -454,7 +454,7 @@ function ChatStep({ onSkip, onComplete }: { onSkip: () => void; onComplete: () =
               </div>
               <div className="rounded-lg px-4 py-2.5 bg-muted flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">Hyper AI is typing...</span>
+                <span className="text-sm text-muted-foreground">Pilot AI is typing...</span>
               </div>
             </div>
           )}

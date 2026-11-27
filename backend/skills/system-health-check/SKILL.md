@@ -7,7 +7,7 @@ description_zh: 当用户要求检查系统健康状况、验证配置是否正�
 
 # System Health Check
 
-Perform a comprehensive health assessment of the user's Hyper Alpha Arena
+Perform a comprehensive health assessment of the user's QuantPilot
 setup. Evaluate all components and provide an overall health score with
 actionable recommendations.
 

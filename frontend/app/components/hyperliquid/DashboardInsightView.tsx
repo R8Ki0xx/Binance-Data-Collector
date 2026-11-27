@@ -1126,7 +1126,7 @@ export default function DashboardInsightView() {
       })
 
       if (!data.task_id) {
-        throw new Error('Failed to start Hyper AI insight analysis')
+        throw new Error('Failed to start Pilot AI insight analysis')
       }
 
       let content = ''
@@ -1160,10 +1160,10 @@ export default function DashboardInsightView() {
         const parsedInsight = parseStructuredInsight(finalContent)
         if (!finalContent.trim()) {
           setAiState('error')
-          setAiError(t('dashboard.insight.aiEmpty', 'Hyper AI returned no readable content.'))
+          setAiError(t('dashboard.insight.aiEmpty', 'Pilot AI returned no readable content.'))
         } else if (!parsedInsight) {
           setAiState('error')
-          setAiError(t('dashboard.insight.aiInvalidFormat', 'Hyper AI returned an invalid insight format.'))
+          setAiError(t('dashboard.insight.aiInvalidFormat', 'Pilot AI returned an invalid insight format.'))
         } else {
           setAiResult(finalContent.trim())
           setAiInsight(parsedInsight)
@@ -1173,7 +1173,7 @@ export default function DashboardInsightView() {
         }
       } else {
         setAiState('error')
-        setAiError(pollResult.error || t('dashboard.insight.aiFailed', 'Hyper AI analysis failed.'))
+        setAiError(pollResult.error || t('dashboard.insight.aiFailed', 'Pilot AI analysis failed.'))
         setCompletedSignature(latestEventSignatureRef.current || signature)
       }
     } catch (error) {
@@ -1505,7 +1505,7 @@ export default function DashboardInsightView() {
         <Card className="flex h-full min-h-0 flex-col overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between gap-3 py-3">
             <div className="flex min-w-0 items-center gap-3">
-              <CardTitle className="text-sm">{t('dashboard.insight.biasTitle', 'Hyper AI Auto Insight')}</CardTitle>
+              <CardTitle className="text-sm">{t('dashboard.insight.biasTitle', 'Pilot AI Auto Insight')}</CardTitle>
               <InsightRefreshBadge active={showRefreshBadge} />
             </div>
             <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -1523,7 +1523,7 @@ export default function DashboardInsightView() {
                   }
                 }}
               />
-              <span>{t('dashboard.insight.aiToggle', 'Hyper AI Auto Insight')}</span>
+              <span>{t('dashboard.insight.aiToggle', 'Pilot AI Auto Insight')}</span>
             </div>
           </CardHeader>
           <CardContent className="min-h-0 flex-1 overflow-y-auto space-y-4">
@@ -1534,10 +1534,10 @@ export default function DashboardInsightView() {
             ) : showInlineError ? (
               <div className="rounded-2xl border border-rose-200 bg-rose-50/70 p-4">
                 <div className="text-sm font-medium text-foreground">
-                  {t('dashboard.insight.aiFailed', 'Hyper AI analysis failed.')}
+                  {t('dashboard.insight.aiFailed', 'Pilot AI analysis failed.')}
                 </div>
                 <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
-                  {aiError || t('dashboard.insight.aiEmpty', 'Hyper AI returned no readable content.')}
+                  {aiError || t('dashboard.insight.aiEmpty', 'Pilot AI returned no readable content.')}
                 </div>
               </div>
             ) : aiInsight ? (

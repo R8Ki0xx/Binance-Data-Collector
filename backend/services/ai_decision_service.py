@@ -590,7 +590,7 @@ FIELD DEPENDENCIES:
 
 
 DECISION_TASK_TEXT = (
-    "You are a systematic trader operating on the Hyper Alpha Arena sandbox (no real funds at risk).\n"
+    "You are a systematic trader operating on the QuantPilot sandbox (no real funds at risk).\n"
     "- Review every open position and decide: buy_to_enter, sell_to_enter, hold, or close_position.\n"
     "- Avoid pyramiding or increasing size unless an exit plan explicitly allows it.\n"
     "- Respect risk: keep new exposure within reasonable fractions of available cash (default ≤ 0.2).\n"
@@ -1524,7 +1524,7 @@ def build_chat_completion_endpoints(base_url: str, model: Optional[str] = None) 
 # ---------------------------------------------------------------------------
 # Unified LLM payload & headers builders
 # ---------------------------------------------------------------------------
-# ALL AI features (Trader, Prompt Gen, Program Gen, Signal Gen, Hyper AI,
+# ALL AI features (Trader, Prompt Gen, Program Gen, Signal Gen, Pilot AI,
 # K-line Analysis, Attribution, Context Compression, Memory) MUST use these
 # two functions to build API payloads and headers.
 # When adding a NEW AI feature, import and call these instead of manually

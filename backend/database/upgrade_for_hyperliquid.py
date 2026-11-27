@@ -140,7 +140,7 @@ def initialize_trading_configs(db: Session):
 def main():
     """Run database upgrade"""
     logger.info("=" * 70)
-    logger.info("Hyper Alpha Arena - Database Upgrade for Hyperliquid")
+    logger.info("QuantPilot - Database Upgrade for Hyperliquid")
     logger.info("=" * 70)
     logger.info("")
 

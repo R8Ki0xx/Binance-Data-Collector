@@ -81,7 +81,7 @@ class StreamTask:
     tool_calls_log: List[Dict[str, Any]] = field(default_factory=list)
     final_content: str = ""
 
-    # Runtime checkpoint state for Hyper AI high-risk tool confirmations
+    # Runtime checkpoint state for Pilot AI high-risk tool confirmations
     confirmation_event: threading.Event = field(default_factory=threading.Event)
     confirmation_response: Optional[Dict[str, Any]] = field(default=None)
     pending_confirmation_id: Optional[str] = field(default=None)

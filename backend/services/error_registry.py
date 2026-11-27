@@ -1,5 +1,5 @@
 """
-Error Registry for Hyper AI diagnostics.
+Error Registry for Pilot AI diagnostics.
 
 Maps known error patterns to metadata (severity, exchange, impact, suggestion)
 so AI can distinguish critical vs noise errors and filter by exchange relevance.

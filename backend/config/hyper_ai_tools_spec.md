@@ -1,6 +1,6 @@
-# Hyper AI Tools Specification
+# Pilot AI Tools Specification
 
-This document defines the detailed specifications for all Hyper AI tools.
+This document defines the detailed specifications for all Pilot AI tools.
 
 ---
 

@@ -1,5 +1,5 @@
 """
-Hyper AI External Tool Registry
+Pilot AI External Tool Registry
 
 Generic registry for external tools that require user-provided API keys.
 To add a new tool, just add an entry to EXTERNAL_TOOL_REGISTRY and

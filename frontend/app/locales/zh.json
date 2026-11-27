@@ -214,21 +214,21 @@
     "loadingData": "正在加载数据...",
     "noAccountConfigured": "未配置Hyperliquid账户",
     "insight": {
-      "aiToggle": "Hyper AI 自动解读",
+      "aiToggle": "Pilot AI 自动解读",
       "aiCostHint": "会产生额外 token 消耗，离开页面后自动停止。",
       "exchange": "交易所",
       "symbol": "标的",
       "chartInterval": "图表周期",
       "timelineTitle": "价格与事件时间线",
-      "biasTitle": "Hyper AI 自动解读",
+      "biasTitle": "Pilot AI 自动解读",
       "loading": "正在构建市场上下文...",
-      "shortTermBias": "Hyper AI 自动解读",
-      "aiDisabledHint": "打开 Hyper AI 自动解读后，系统会在关键事件出现时发起真实分析。",
+      "shortTermBias": "Pilot AI 自动解读",
+      "aiDisabledHint": "打开 Pilot AI 自动解读后，系统会在关键事件出现时发起真实分析。",
       "monitoringTitle": "正在监控新的新闻和资金流事件",
       "monitoringHint": "只有当相关事件真正出现时，系统才会生成新的解读，而不是持续空转。",
       "thinkingTitle": "AI 正在阅读新事件",
       "thinkingHint": "刚刚出现的新新闻或资金流变化，已经触发了一次新的解读过程。",
-      "unavailableTitle": "Hyper AI 结果暂不可用",
+      "unavailableTitle": "Pilot AI 结果暂不可用",
       "unavailableHint": "这里不再显示任何兜底结论，只等待真实模型返回。",
       "contextHint": "当前分析上下文已经包含交易所、标的、图表周期、最近 4 小时 K 线、相关新闻和大单区间。",
       "contextCandles": "K线",
@@ -252,9 +252,9 @@
       "totalInflow": "总流入",
       "totalOutflow": "总流出",
       "liveInsight": "实时解读",
-      "aiFailed": "Hyper AI 分析失败",
-      "aiEmpty": "Hyper AI 没有返回可展示内容。",
-      "aiInvalidFormat": "Hyper AI 返回了无法解析的结构化结果。",
+      "aiFailed": "Pilot AI 分析失败",
+      "aiEmpty": "Pilot AI 没有返回可展示内容。",
+      "aiInvalidFormat": "Pilot AI 返回了无法解析的结构化结果。",
       "aiRefreshing": "正在解读新的市场事件...",
       "probability": "概率",
       "bearish": "看空",
@@ -373,10 +373,10 @@
     "loading": "加载中...",
     "walletTracking": {
       "title": "钱包跟踪",
-      "description": "将 Hyper Insight 的已跟踪钱包作为 HAA 内的实时信号来源接入。",
+      "description": "将 Hyper Insight 的已跟踪钱包作为 QuantPilot 内的实时信号来源接入。",
       "sourceTypeLabel": "钱包跟踪",
       "connectionStatus": "连接状态",
-      "connectionHint": "启用后，HAA 会连接 Hyper Insight 并同步你正在跟踪的钱包。",
+      "connectionHint": "启用后，QuantPilot 会连接 Hyper Insight 并同步你正在跟踪的钱包。",
       "notConnected": "未连接",
       "connected": "已连接",
       "connectedNoWallets": "已连接 · 暂无跟踪地址",
@@ -399,7 +399,7 @@
       "disableFailed": "停用钱包跟踪集成失败",
       "manageOnInsight": "前往 Hyper Insight 管理",
       "createWalletPool": "创建钱包信号池",
-      "inlineHint": "先在这里建立连接。跟踪地址同步过来后，再决定哪些钱包进入 HAA 的钱包信号池。",
+      "inlineHint": "先在这里建立连接。跟踪地址同步过来后，再决定哪些钱包进入 QuantPilot 的钱包信号池。",
       "addresses": "已跟踪钱包",
       "eventTypes": "事件类型",
       "eventTypePositionChange": "仓位变化",
@@ -746,7 +746,7 @@
   "trader": {
     "title": "AI交易员管理",
     "subtitle": "管理您的AI交易员并配置交易策略",
-    "welcomeTitle": "欢迎使用 Hyper Alpha Arena！",
+    "welcomeTitle": "欢迎使用 QuantPilot！",
     "welcomeSubtitle": "让我们设置您的第一个AI交易员",
     "setupTitle": "设置您的AI交易员",
     "setupDesc": "我们已为您创建了一个默认AI交易员。要开始交易，您需要：",
@@ -1167,12 +1167,12 @@
       "inProgress": "设置中...",
       "connecting": "正在连接浏览器钱包...",
       "checkingAuth": "正在检查交易授权...",
-      "signingAuth": "请在钱包中确认 Hyper Alpha Arena 交易工具授权...",
+      "signingAuth": "请在钱包中确认 QuantPilot 交易工具授权...",
       "signingAgent": "请在钱包中确认创建 API 钱包...",
       "saving": "正在保存钱包配置...",
       "done": "钱包设置完成！",
       "rejected": "用户拒绝了签名请求",
-      "mainnetHint": "连接浏览器钱包，授权 Hyper Alpha Arena 交易工具，并创建安全的 API 钱包。",
+      "mainnetHint": "连接浏览器钱包，授权 QuantPilot 交易工具，并创建安全的 API 钱包。",
       "testnetHint": "连接浏览器钱包并创建安全的 API 钱包用于测试网交易。"
     },
     "error": {
@@ -1731,12 +1731,12 @@
     "resetAt": "重置时间"
   },
   "hyperAi": {
-    "title": "Hyper AI",
+    "title": "Pilot AI",
     "newChat": "新对话",
     "messages": "条消息",
     "inputPlaceholder": "输入消息...",
     "config": "AI 配置",
-    "configTitle": "Hyper AI 配置",
+    "configTitle": "Pilot AI 配置",
     "skills": "技能",
     "skillsLoading": "加载中...",
     "skillActive": "使用中",
@@ -1758,9 +1758,9 @@
     "telegramBot": "Telegram 机器人",
     "discordBot": "Discord 机器人",
     "memory": {
-      "title": "Hyper AI 的记忆",
+      "title": "Pilot AI 的记忆",
       "button": "记忆",
-      "empty": "暂无记忆。随着你与 Hyper AI 的对话，它会记住关键的交易洞察。",
+      "empty": "暂无记忆。随着你与 Pilot AI 的对话，它会记住关键的交易洞察。",
       "items": "{{count}} 条记忆",
       "source": "来源",
       "importance": "重要性",
@@ -1772,8 +1772,8 @@
         "context": "上下文"
       }
     },
-    "welcomeWithName": "你好，{{name}}！我是 Hyper AI，你的专属交易助手。",
-    "welcomeNoName": "你好！我是 Hyper AI，Hyper Alpha Arena 的智能助手。",
+    "welcomeWithName": "你好，{{name}}！我是 Pilot AI，你的专属交易助手。",
+    "welcomeNoName": "你好！我是 Pilot AI，QuantPilot 的智能助手。",
     "welcomeCapabilities": "我可以帮你：",
     "capability1": "了解系统功能和使用方法",
     "capability2": "生成和优化 AI 交易策略",
@@ -1819,8 +1819,8 @@
     "hideContent": "收起内容",
     "viewInPage": "在页面中查看",
     "onboarding": {
-      "welcome": "欢迎使用 Hyper Alpha Arena",
-      "configureAi": "配置 Hyper AI 轻松上手",
+      "welcome": "欢迎使用 QuantPilot",
+      "configureAi": "配置 Pilot AI 轻松上手",
       "provider": "AI 服务商",
       "selectProvider": "选择服务商",
       "baseUrl": "API 地址",
@@ -1836,23 +1836,23 @@
       "connectionSuccess": "连接成功！",
       "testing": "测试中...",
       "connected": "已建立连接！",
-      "findMeAt": "任何问题都可以在 Hyper AI 找到我。",
+      "findMeAt": "任何问题都可以在 Pilot AI 找到我。",
       "enterSystem": "进入系统",
       "gettingToKnow": "了解你的交易偏好",
       "gettingToKnowQuestions": "了解你的交易偏好（约3-4个问题）",
       "typeMessage": "输入消息...",
-      "chatHint": "与 Hyper AI 聊天，个性化你的体验",
+      "chatHint": "与 Pilot AI 聊天，个性化你的体验",
       "chatError": "抱歉，出了点问题，请重试。",
-      "defaultGreeting": "你好！我是 Hyper AI。在开始之前，我想简单了解一下你的交易背景，这样可以更好地为你服务。你之前有过加密货币交易的经验吗？",
+      "defaultGreeting": "你好！我是 Pilot AI。在开始之前，我想简单了解一下你的交易背景，这样可以更好地为你服务。你之前有过加密货币交易的经验吗？",
       "profileSaved": "你的偏好已保存！"
     }
   },
   "bot": {
     "telegram": {
-      "howToChat": "点击下方开始与 Hyper AI 对话：",
+      "howToChat": "点击下方开始与 Pilot AI 对话：",
       "openChat": "在 Telegram 中打开对话"
     },
-    "telegramDesc": "连接 Telegram 机器人，在 Telegram 中与 Hyper AI 对话。",
+    "telegramDesc": "连接 Telegram 机器人，在 Telegram 中与 Pilot AI 对话。",
     "status": "状态",
     "tokenLabel": "机器人 Token",
     "tokenHint": "从 Telegram @BotFather 获取机器人 Token",
@@ -1889,7 +1889,7 @@
     "noSignalPools": "暂无配置信号池。",
     "discord": {
       "name": "Discord 机器人",
-      "desc": "连接 Discord 机器人，在 Discord 私信中与 Hyper AI 对话。",
+      "desc": "连接 Discord 机器人，在 Discord 私信中与 Pilot AI 对话。",
       "step1Desc": "打开 Discord 开发者门户并创建一个新的应用：",
       "openPortal": "打开",
       "step1a": "点击 \"New Application\" 并输入名称",
@@ -1902,7 +1902,7 @@
       "intentNote": "不开启此权限，机器人将无法读取你的私信消息。",
       "intentDone": "我已开启",
       "step3Desc": "现在粘贴你的机器人 Token：",
-      "howToChat": "按以下步骤与 Hyper AI 对话：",
+      "howToChat": "按以下步骤与 Pilot AI 对话：",
       "addToServer": "将机器人添加到服务器",
       "dmStep1": "点击上方链接将机器人添加到任意服务器",
       "dmStep2": "在 Discord 中，在服务器成员列表找到机器人",
@@ -2034,7 +2034,7 @@
       "noPositions": "无持仓"
     },
     "hyperAI": {
-      "tooltip": "与 Hyper AI 对话"
+      "tooltip": "与 Pilot AI 对话"
     }
   }
 }

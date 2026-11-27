@@ -1,1 +1,1 @@
-"""Utility modules for Hyper Alpha Arena backend"""
+"""Utility modules for QuantPilot backend"""

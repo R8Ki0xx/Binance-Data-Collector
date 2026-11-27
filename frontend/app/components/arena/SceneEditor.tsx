@@ -213,7 +213,7 @@ const ITEM_CATALOG: Record<string, AssetItem[]> = {
     { id: 'scifi-console-1', label: 'Sci-fi Console', file: 'scifi-console-1.png', w: 32, h: 32 },
   ],
   signs: [
-    { id: 'sign-hyper-arena', label: 'Hyper Alpha Arena', file: 'sign-hyper-arena.png', w: 124, h: 30 },
+    { id: 'sign-hyper-arena', label: 'QuantPilot', file: 'sign-hyper-arena.png', w: 124, h: 30 },
   ],
   widgets: [
     { id: 'widget-clock', label: 'Live Clock', file: '__widget_clock__', w: 80, h: 14 },

@@ -28,7 +28,7 @@ from version import __version__
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Hyper Alpha Arena API",
+    title="QuantPilot API",
     version=__version__,
     description="Cryptocurrency perpetual contract trading platform with AI-powered decision making"
 )

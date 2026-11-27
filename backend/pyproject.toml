@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "hyper-alpha-arena-backend"
+name = "quantpilot-backend"
 version = "0.9.12"
 requires-python = ">=3.12"
 dependencies = [

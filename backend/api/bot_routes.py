@@ -304,7 +304,7 @@ async def connect_telegram_bot(
     ).first()
     if not bot_conv:
         bot_conv = HyperAiConversation(
-            title="Hyper AI Bot",
+            title="Pilot AI Bot",
             is_bot_conversation=True
         )
         db.add(bot_conv)
@@ -383,7 +383,7 @@ async def telegram_webhook(request: Request, db: Session = Depends(get_db)):
     if not token:
         return {"ok": True}
 
-    # Process message with Hyper AI (async, non-blocking)
+    # Process message with Pilot AI (async, non-blocking)
     asyncio.create_task(
         _process_telegram_message(token, chat_id, text, user, db)
     )
@@ -400,7 +400,7 @@ async def _process_telegram_message(
     db: Session
 ):
     """
-    Process a Telegram message through Hyper AI and send response.
+    Process a Telegram message through Pilot AI and send response.
     Runs as a background task to avoid blocking the webhook response.
     Reply unicast: response only goes to the originating chat_id.
     """
@@ -441,7 +441,7 @@ async def _process_telegram_message(
         if not conv:
             # Fallback: create one if not exists (shouldn't happen normally)
             conv = HyperAiConversation(
-                title="Hyper AI Bot",
+                title="Pilot AI Bot",
                 is_bot_conversation=True
             )
             db_session.add(conv)
@@ -495,7 +495,7 @@ async def _process_telegram_message(
             labels = [_get_tool_label(name, lang) for name in tool_calls[:5]]
             if len(tool_calls) > 5:
                 labels.append(f"...+{len(tool_calls) - 5} more")
-            progress_msg = "【🤖Hyper AI】" + " → ".join(labels)
+            progress_msg = "【🤖Pilot AI】" + " → ".join(labels)
             await send_telegram_message(token, chat_id, progress_msg)
 
         print(f"[TG-PROCESS] AI response length={len(full_response)}", flush=True)
@@ -565,7 +565,7 @@ async def connect_discord_bot(
     ).first()
     if not bot_conv:
         bot_conv = HyperAiConversation(
-            title="Hyper AI Bot",
+            title="Pilot AI Bot",
             is_bot_conversation=True
         )
         db.add(bot_conv)
@@ -585,7 +585,7 @@ async def connect_discord_bot(
 async def _start_discord_gateway_background(token: str):
     """Start Discord Gateway in background with message handler."""
     async def handle_discord_message(user_id: int, username: str, display_name: str, text: str) -> str:
-        """Process Discord DM through Hyper AI."""
+        """Process Discord DM through Pilot AI."""
         return await _process_discord_message_internal(user_id, username, display_name, text)
 
     try:
@@ -601,7 +601,7 @@ async def _process_discord_message_internal(
     text: str
 ) -> str:
     """
-    Process a Discord DM through Hyper AI and return response.
+    Process a Discord DM through Pilot AI and return response.
     Similar to _process_telegram_message but returns string instead of sending directly.
     """
     from services.hyper_ai_service import stream_chat_response
@@ -636,7 +636,7 @@ async def _process_discord_message_internal(
 
         if not conv:
             conv = HyperAiConversation(
-                title="Hyper AI Bot",
+                title="Pilot AI Bot",
                 is_bot_conversation=True
             )
             db_session.add(conv)
@@ -669,7 +669,7 @@ async def _process_discord_message_internal(
                     data = json.loads(data_str)
                     if event_type == "tool_call" and data.get("name"):
                         label = _get_tool_label(data["name"], lang)
-                        msg = f"【🤖Hyper AI】{label}..."
+                        msg = f"【🤖Pilot AI】{label}..."
                         asyncio.run_coroutine_threadsafe(
                             send_discord_message_via_client(user_id, msg), loop
                         )
