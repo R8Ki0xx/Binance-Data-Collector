@@ -1,0 +1,67 @@
+/**
+ * Trading Mode Switcher Component
+ * Allows users to switch between Testnet and Mainnet
+ */
+
+import { useTradingMode, TradingMode } from '@/contexts/TradingModeContext';
+import { useTranslation } from 'react-i18next';
+
+export default function TradingModeSwitcher() {
+  const { tradingMode, setTradingMode } = useTradingMode();
+  const { t } = useTranslation();
+
+  const modes: { value: TradingMode; label: string; subtitleKey: string; subtitleDefault: string; color: string }[] = [
+    {
+      value: 'testnet',
+      label: 'Testnet',
+      subtitleKey: 'trading.testMoney',
+      subtitleDefault: 'Test Money',
+      color: 'bg-green-500 hover:bg-green-600',
+    },
+    {
+      value: 'mainnet',
+      label: 'Mainnet',
+      subtitleKey: 'trading.realMoney',
+      subtitleDefault: 'Real Money ⚠️',
+      color: 'bg-red-500 hover:bg-red-600',
+    },
+  ];
+
+  const handleModeClick = (mode: TradingMode) => {
+    console.log('[TradingModeSwitcher] Button clicked, target mode:', mode);
+    console.log('[TradingModeSwitcher] Current tradingMode:', tradingMode);
+    try {
+      setTradingMode(mode);
+      console.log('[TradingModeSwitcher] setTradingMode called successfully');
+    } catch (error) {
+      console.error('[TradingModeSwitcher] Error calling setTradingMode:', error);
+    }
+  };
+
+  return (
+    <div className="flex items-center space-x-2">
+      <span className="text-xs font-medium text-gray-600">{t('trading.mode', 'Mode')}:</span>
+      <div className="inline-flex rounded-md border border-gray-300 bg-white p-0.5">
+        {modes.map((mode) => (
+          <button
+            key={mode.value}
+            onClick={() => handleModeClick(mode.value)}
+            className={`
+              px-3 py-1.5 rounded text-xs font-medium transition-all
+              ${
+                tradingMode === mode.value
+                  ? `${mode.color} text-white shadow-sm`
+                  : 'text-gray-700 hover:bg-gray-100'
+              }
+            `}
+          >
+            <div className="flex flex-col items-center">
+              <span>{mode.label}</span>
+              <span className="text-[10px] opacity-80 whitespace-nowrap">{t(mode.subtitleKey, mode.subtitleDefault)}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

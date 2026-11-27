@@ -1,0 +1,1747 @@
+"""
+Hyperliquid Management API Routes
+
+Provides endpoints for:
+- Account setup and configuration
+- Environment switching (testnet/mainnet)
+- Balance and position queries
+- Manual order placement (for testing)
+- Connection testing
+"""
+from datetime import datetime, timedelta, timezone
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, case
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
+from typing import Optional, List
+import logging
+import time
+
+from database.connection import get_db
+from database.models import HyperliquidExchangeAction
+from services.hyperliquid_environment import (
+    setup_hyperliquid_account,
+    get_hyperliquid_client,
+    switch_hyperliquid_environment,
+    get_account_hyperliquid_config,
+    disable_hyperliquid_trading,
+    enable_hyperliquid_trading,
+)
+from services.hyperliquid_trading_client import clear_trading_client_cache
+from services.hyperliquid_symbol_service import (
+    get_available_symbols_info,
+    get_selected_symbols,
+    update_selected_symbols,
+    MAX_WATCHLIST_SYMBOLS,
+)
+from services.hyperliquid_cache import (
+    get_cached_account_state,
+    get_cached_positions,
+)
+from utils.runtime_diagnostics import get_current_thread_count, log_hot_path_delta
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api/hyperliquid", tags=["hyperliquid"])
+
+
+def _ts_to_iso(ts: float) -> str:
+    return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+# Request/Response Models
+class HyperliquidSetupRequest(BaseModel):
+    """Request model for Hyperliquid account setup"""
+    environment: str = Field(..., pattern="^(testnet|mainnet)$", description="Trading environment")
+    private_key: str = Field(..., min_length=10, description="Hyperliquid private key (will be encrypted)", alias="privateKey")
+    max_leverage: int = Field(3, ge=1, le=50, description="Maximum allowed leverage", alias="maxLeverage")
+    default_leverage: int = Field(1, ge=1, le=50, description="Default leverage for orders", alias="defaultLeverage")
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "environment": "testnet",
+                "privateKey": "0x1234567890abcdef...",
+                "maxLeverage": 3,
+                "defaultLeverage": 1
+            }
+        }
+
+
+class EnvironmentSwitchRequest(BaseModel):
+    """Request model for environment switching"""
+    target_environment: str = Field(..., pattern="^(testnet|mainnet)$")
+    confirm_switch: bool = Field(False, description="Must be True to proceed (safety check)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "target_environment": "mainnet",
+                "confirm_switch": True
+            }
+        }
+
+
+class ManualOrderRequest(BaseModel):
+    """Request model for manual order placement"""
+    symbol: str = Field(..., description="Asset symbol (e.g., 'BTC')")
+    is_buy: bool = Field(..., description="True for long, False for short")
+    size: float = Field(..., gt=0, description="Order size")
+    price: float = Field(..., gt=0, description="Limit price for the order")
+    time_in_force: str = Field("Ioc", pattern="^(Ioc|Gtc|Alo)$", description="Time in force: Ioc (market-like), Gtc (limit order), Alo (maker only)")
+    leverage: int = Field(1, ge=1, le=50, description="Position leverage")
+    reduce_only: bool = Field(False, description="Only close existing positions")
+    take_profit_price: Optional[float] = Field(None, gt=0, description="Take profit trigger price")
+    stop_loss_price: Optional[float] = Field(None, gt=0, description="Stop loss trigger price")
+    environment: Optional[str] = Field(None, description="Environment override ('testnet' or 'mainnet')")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "symbol": "BTC",
+                "is_buy": True,
+                "size": 0.01,
+                "price": 50000.0,
+                "time_in_force": "Ioc",
+                "leverage": 2,
+                "reduce_only": False,
+                "take_profit_price": 55000.0,
+                "stop_loss_price": 47500.0
+            }
+        }
+
+
+class HyperliquidSymbolSelectionRequest(BaseModel):
+    symbols: List[str] = Field(default_factory=list, description="Symbols to monitor")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "symbols": ["BTC", "ETH", "SOL"]
+            }
+        }
+
+
+# API Endpoints
+
+@router.post("/accounts/{account_id}/setup")
+def setup_account(
+    account_id: int,
+    request: HyperliquidSetupRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Setup Hyperliquid trading for an account
+
+    This endpoint:
+    - Encrypts and stores the private key
+    - Sets the trading environment (testnet or mainnet)
+    - Configures leverage limits
+    - Enables Hyperliquid trading
+
+    **Note**: Private keys are encrypted using Fernet before storage.
+    Ensure HYPERLIQUID_ENCRYPTION_KEY is set in environment.
+    """
+    try:
+        result = setup_hyperliquid_account(
+            db=db,
+            account_id=account_id,
+            environment=request.environment,
+            private_key=request.private_key,
+            max_leverage=request.max_leverage,
+            default_leverage=request.default_leverage
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Setup failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Setup failed: {str(e)}")
+
+
+@router.post("/accounts/{account_id}/switch-environment")
+def switch_environment(
+    account_id: int,
+    request: EnvironmentSwitchRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Switch account between testnet and mainnet
+
+    **Safety measures**:
+    - Requires explicit confirmation (confirm_switch=True)
+    - Blocks switch if open positions exist
+    - Verifies target environment has credentials configured
+
+    **Warning**: This is a critical operation. Ensure you understand
+    the implications before switching environments.
+    """
+    try:
+        result = switch_hyperliquid_environment(
+            db=db,
+            account_id=account_id,
+            target_environment=request.target_environment,
+            confirm_switch=request.confirm_switch
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Environment switch failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Switch failed: {str(e)}")
+
+
+@router.get("/accounts/{account_id}/config")
+def get_config(
+    account_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get Hyperliquid configuration for an account
+
+    Returns:
+    - Enabled status
+    - Current environment
+    - Leverage settings
+    - Whether testnet/mainnet credentials are configured
+    """
+    try:
+        config = get_account_hyperliquid_config(db, account_id)
+        return config
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to get config: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/accounts/{account_id}/balance")
+def get_balance(
+    account_id: int,
+    force_refresh: bool = False,
+    environment: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get Hyperliquid account balance.
+
+    Unless force_refresh is True, this endpoint returns the most recent cached
+    snapshot captured by the backend. This avoids excessive direct calls to
+    Hyperliquid when rendering dashboards.
+
+    Args:
+        account_id: Target account ID
+        force_refresh: If True, fetch directly from Hyperliquid instead of cache
+        environment: Optional environment override ("testnet" or "mainnet")
+                    If not specified, uses global trading mode
+    """
+    start_threads = get_current_thread_count()
+    start_time = time.monotonic()
+    try:
+        # Determine environment to use
+        if environment is None:
+            from services.hyperliquid_environment import get_global_trading_mode
+            environment = get_global_trading_mode(db)
+
+        if not force_refresh:
+            cached_entry = get_cached_account_state(account_id, environment)
+            if cached_entry:
+                payload = dict(cached_entry["data"])
+                payload["source"] = "cache"
+                payload["cached_at"] = _ts_to_iso(cached_entry["timestamp"])
+                return payload
+
+        client = get_hyperliquid_client(db, account_id, override_environment=environment)
+        balance = client.get_account_state(db)
+        balance["source"] = "live"
+        ts_ms = balance.get("timestamp")
+        if isinstance(ts_ms, (int, float)):
+            balance["cached_at"] = _ts_to_iso(ts_ms / 1000.0)
+        else:
+            balance["cached_at"] = datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
+        return balance
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to get balance: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Balance query failed: {str(e)}")
+    finally:
+        log_hot_path_delta(
+            logger,
+            "hyperliquid:balance",
+            "/api/hyperliquid/accounts/{account_id}/balance",
+            start_threads,
+            start_time,
+            account_id=account_id,
+            environment=environment,
+            force_refresh=force_refresh,
+        )
+
+
+@router.get("/accounts/{account_id}/positions")
+def get_positions(
+    account_id: int,
+    force_refresh: bool = False,
+    environment: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all open positions for an account.
+
+    By default, this uses the latest cached snapshot taken by the backend.
+    Set force_refresh=true to fetch directly from Hyperliquid.
+
+    Args:
+        account_id: Target account ID
+        force_refresh: If True, fetch directly from Hyperliquid instead of cache
+        environment: Optional environment override ("testnet" or "mainnet")
+                    If not specified, uses global trading mode
+    """
+    try:
+        # Determine environment to use
+        if environment is None:
+            from services.hyperliquid_environment import get_global_trading_mode
+            environment = get_global_trading_mode(db)
+
+        if not force_refresh:
+            cached_entry = get_cached_positions(account_id, environment)
+            if cached_entry:
+                return {
+                    'account_id': account_id,
+                    'environment': environment,
+                    'positions': cached_entry["data"],
+                    'count': len(cached_entry["data"]),
+                    'source': 'cache',
+                    'cached_at': _ts_to_iso(cached_entry["timestamp"]),
+                }
+
+        client = get_hyperliquid_client(db, account_id, override_environment=environment)
+        positions = client.get_positions(db)
+        return {
+            'account_id': account_id,
+            'environment': client.environment,
+            'positions': positions,
+            'count': len(positions),
+            'source': 'live',
+            'cached_at': datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z"),
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to get positions: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Positions query failed: {str(e)}")
+
+
+@router.post("/accounts/{account_id}/orders/manual")
+def place_manual_order(
+    account_id: int,
+    request: ManualOrderRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Manually place a Hyperliquid order
+
+    **Use cases**:
+    - Testing order placement
+    - Manual intervention during trading
+    - Emergency position closing
+
+    **Warning**: This bypasses AI decision-making. Use with caution.
+
+    Args:
+        account_id: Target account ID
+        request: Order request with optional environment override
+    """
+    try:
+        client = get_hyperliquid_client(db, account_id, override_environment=request.environment)
+
+        # Validate leverage against wallet limits (uses unified leverage getter)
+        from services.hyperliquid_environment import get_leverage_settings, get_global_trading_mode
+
+        # Determine actual environment being used
+        actual_environment = request.environment if request.environment else get_global_trading_mode(db)
+
+        # Get leverage settings from wallet (or Account table fallback)
+        leverage_settings = get_leverage_settings(db, account_id, actual_environment)
+        max_leverage = leverage_settings["max_leverage"]
+
+        if request.leverage > max_leverage:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Leverage {request.leverage}x exceeds account maximum {max_leverage}x for {actual_environment} environment"
+            )
+
+        # Place order using native Hyperliquid API with TP/SL support
+        result = client.place_order_with_tpsl(
+            db=db,
+            symbol=request.symbol,
+            is_buy=request.is_buy,
+            size=request.size,
+            price=request.price,
+            leverage=request.leverage,
+            time_in_force=request.time_in_force,
+            reduce_only=request.reduce_only,
+            take_profit_price=request.take_profit_price,
+            stop_loss_price=request.stop_loss_price
+        )
+
+        return {
+            'account_id': account_id,
+            'environment': client.environment,
+            'order_result': result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Manual order failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Order placement failed: {str(e)}")
+
+
+@router.post("/accounts/{account_id}/disable")
+def disable_trading(
+    account_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Disable Hyperliquid trading for an account
+
+    **Note**: This does NOT delete stored credentials, only disables trading.
+    Credentials remain encrypted in database for potential re-enable.
+    """
+    try:
+        result = disable_hyperliquid_trading(db, account_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to disable trading: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/accounts/{account_id}/enable")
+def enable_trading(
+    account_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Re-enable Hyperliquid trading for an account
+
+    Requires account to have environment and credentials already configured.
+    """
+    try:
+        result = enable_hyperliquid_trading(db, account_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to enable trading: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/accounts/{account_id}/test-connection")
+def test_connection(
+    account_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Test Hyperliquid API connection
+
+    This endpoint:
+    - Validates account configuration
+    - Tests API authentication
+    - Fetches basic account info
+    - Returns connection status
+
+    Use this to verify setup before enabling automated trading.
+    """
+    try:
+        client = get_hyperliquid_client(db, account_id)
+        result = client.test_connection(db)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Connection test failed: {e}", exc_info=True)
+        return {
+            'connected': False,
+            'error': str(e),
+            'account_id': account_id
+        }
+
+
+@router.get("/accounts/{account_id}/snapshots")
+def get_account_snapshots(
+    account_id: int,
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of snapshots to return"),
+    db: Session = Depends(get_db)
+):
+    """
+    Get historical account snapshots for Hyperliquid account
+
+    Returns time-series data of account equity, available balance, and used margin.
+    Used for asset curve visualization in the frontend.
+
+    Query Parameters:
+    - limit: Maximum number of snapshots (default: 100, max: 1000)
+
+    Returns:
+    - Array of snapshot objects with timestamp, equity, balance, and margin data
+    """
+    from database.models import Account
+    from database.snapshot_connection import SnapshotSessionLocal
+    from database.snapshot_models import HyperliquidAccountSnapshot
+
+    # Verify account exists and has Hyperliquid environment configured
+    account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if not account.hyperliquid_environment:
+        raise HTTPException(
+            status_code=400,
+            detail="Hyperliquid environment is not configured for this account"
+        )
+
+    # Query snapshots from snapshot database
+    snapshot_db = SnapshotSessionLocal()
+    try:
+        snapshots = snapshot_db.query(HyperliquidAccountSnapshot).filter(
+            HyperliquidAccountSnapshot.account_id == account_id
+        ).order_by(
+            HyperliquidAccountSnapshot.created_at.desc()
+        ).limit(limit).all()
+    finally:
+        snapshot_db.close()
+
+    # Convert to response format (reverse to oldest first for charting)
+    result = []
+    for snapshot in reversed(snapshots):
+        result.append({
+            'account_id': snapshot.account_id,
+            'environment': snapshot.environment,
+            'snapshot_time': snapshot.created_at.isoformat(),
+            'total_equity': float(snapshot.total_equity),
+            'available_balance': float(snapshot.available_balance),
+            'used_margin': float(snapshot.used_margin),
+            'maintenance_margin': float(snapshot.maintenance_margin),
+            'trigger_event': snapshot.trigger_event
+        })
+
+    return {
+        'account_id': account_id,
+        'account_name': account.name,
+        'environment': account.hyperliquid_environment,
+        'snapshot_count': len(result),
+        'snapshots': result
+    }
+
+
+@router.get("/symbols/available")
+def list_available_symbols():
+    """Return cached Hyperliquid tradable symbols (refreshed periodically)."""
+    info = get_available_symbols_info()
+    return {
+        "symbols": info.get("symbols", []),
+        "updated_at": info.get("updated_at"),
+        "max_symbols": MAX_WATCHLIST_SYMBOLS,
+    }
+
+
+@router.get("/symbols/watchlist")
+def get_symbol_watchlist():
+    """Return the currently configured global Hyperliquid watchlist."""
+    symbols = get_selected_symbols()
+    return {
+        "symbols": symbols,
+        "max_symbols": MAX_WATCHLIST_SYMBOLS,
+    }
+
+
+@router.put("/symbols/watchlist")
+def update_symbol_watchlist(payload: HyperliquidSymbolSelectionRequest):
+    """Update global Hyperliquid watchlist (max 10 symbols)."""
+    try:
+        symbols = update_selected_symbols(payload.symbols)
+        logger.info(f"[Hyperliquid] Watchlist updated to: {symbols}")
+        return {
+            "symbols": symbols,
+            "max_symbols": MAX_WATCHLIST_SYMBOLS,
+        }
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    except Exception as err:
+        logger.error(f"Failed to update Hyperliquid watchlist: {err}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to update Hyperliquid watchlist")
+
+
+@router.get("/actions/summary")
+def get_action_summary(
+    window_minutes: int = 1440,
+    account_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Summarize Hyperliquid exchange actions recorded by the backend.
+
+    Parameters:
+    - window_minutes: Lookback window (default 24h)
+    - account_id: Optional filter for a single account
+    """
+    try:
+        cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
+        query = db.query(
+            HyperliquidExchangeAction.action_type.label("action_type"),
+            func.count(HyperliquidExchangeAction.id).label("count"),
+            func.sum(
+                case((HyperliquidExchangeAction.status == "error", 1), else_=0)
+            ).label("errors"),
+            func.max(HyperliquidExchangeAction.created_at).label("last_ts"),
+        ).filter(HyperliquidExchangeAction.created_at >= cutoff)
+
+        if account_id is not None:
+            query = query.filter(HyperliquidExchangeAction.account_id == account_id)
+
+        rows = query.group_by(HyperliquidExchangeAction.action_type).all()
+        total_actions = sum(row.count for row in rows)
+        latest_event = max((row.last_ts for row in rows if row.last_ts), default=None)
+
+        summary = {
+            "window_minutes": window_minutes,
+            "account_id": account_id,
+            "total_actions": total_actions,
+            "generated_at": datetime.utcnow().replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z"),
+            "latest_action_at": latest_event.isoformat().replace("+00:00", "Z") if latest_event else None,
+            "by_action": [
+                {
+                    "action_type": row.action_type,
+                    "count": row.count,
+                    "errors": int(row.errors or 0),
+                    "last_occurrence": row.last_ts.isoformat().replace("+00:00", "Z") if row.last_ts else None,
+                }
+                for row in rows
+            ],
+        }
+        return summary
+    except Exception as err:
+        logger.error(f"Failed to summarize Hyperliquid actions: {err}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to summarize Hyperliquid actions")
+
+
+@router.get("/accounts/{account_id}/rate-limit")
+def get_account_rate_limit(
+    account_id: int,
+    environment: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get API request rate limit status for Hyperliquid account
+
+    Returns the address-based request quota information including:
+    - Cumulative trading volume
+    - Requests used vs cap
+    - Remaining quota
+    - Over-limit status
+
+    This helps users understand if they need to increase trading volume
+    to avoid "Too many requests" errors when placing orders.
+
+    Args:
+        account_id: Account ID
+        environment: Optional environment override ("testnet" or "mainnet")
+                    If not specified, uses global trading mode
+        db: Database session
+
+    Returns:
+        Rate limit status with usage metrics
+
+    Raises:
+        HTTPException: If account not found or Hyperliquid not enabled
+    """
+    try:
+        # Determine environment to use
+        if environment is None:
+            from services.hyperliquid_environment import get_global_trading_mode
+            environment = get_global_trading_mode(db)
+
+        # Get Hyperliquid client for this account with environment override
+        client = get_hyperliquid_client(db, account_id, override_environment=environment)
+
+        if not client:
+            raise HTTPException(
+                status_code=400,
+                detail="Hyperliquid trading is not enabled for this account"
+            )
+
+        # Query rate limit status
+        rate_limit = client.get_user_rate_limit(db)
+
+        return {
+            'success': True,
+            'accountId': account_id,
+            'rateLimit': rate_limit
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get rate limit for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to query rate limit: {str(e)}"
+        )
+
+
+@router.get("/accounts/{account_id}/trading-stats")
+def get_account_trading_stats(
+    account_id: int,
+    environment: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get trading statistics for Hyperliquid account
+
+    Returns win rate, profit factor, and other trading metrics based on
+    historical closed trades.
+
+    Args:
+        account_id: Account ID
+        environment: Optional environment override ("testnet" or "mainnet")
+                    If not specified, uses global trading mode
+        db: Database session
+
+    Returns:
+        Trading statistics including win rate, total trades, PnL metrics
+
+    Raises:
+        HTTPException: If account not found or Hyperliquid not enabled
+    """
+    try:
+        # Determine environment to use
+        if environment is None:
+            from services.hyperliquid_environment import get_global_trading_mode
+            environment = get_global_trading_mode(db)
+
+        # Get Hyperliquid client for this account with environment override
+        client = get_hyperliquid_client(db, account_id, override_environment=environment)
+
+        if not client:
+            raise HTTPException(
+                status_code=400,
+                detail="Hyperliquid trading is not enabled for this account"
+            )
+
+        # Query trading stats
+        stats = client.get_trading_stats(db)
+
+        return {
+            'success': True,
+            'accountId': account_id,
+            'environment': environment,
+            'stats': stats
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get trading stats for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to query trading stats: {str(e)}"
+        )
+
+
+@router.get("/health")
+def health_check():
+    """
+    Hyperliquid service health check
+
+    Returns service status and configuration info.
+    """
+    import os
+    return {
+        'status': 'healthy',
+        'service': 'hyperliquid',
+        'encryption_configured': bool(os.getenv('HYPERLIQUID_ENCRYPTION_KEY')),
+        'endpoints': {
+            'setup': '/api/hyperliquid/accounts/{id}/setup',
+            'balance': '/api/hyperliquid/accounts/{id}/balance',
+            'positions': '/api/hyperliquid/accounts/{id}/positions',
+            'snapshots': '/api/hyperliquid/accounts/{id}/snapshots',
+            'test': '/api/hyperliquid/accounts/{id}/test-connection',
+            'wallet': '/api/hyperliquid/accounts/{id}/wallet'
+        }
+    }
+
+
+# ========== Wallet Management API (New Multi-Wallet Architecture) ==========
+
+class WalletConfigRequest(BaseModel):
+    """Request model for wallet configuration"""
+    private_key: str = Field(..., min_length=64, max_length=66, description="Hyperliquid private key (0x...)", alias="privateKey")
+    max_leverage: int = Field(3, ge=1, le=50, description="Maximum allowed leverage", alias="maxLeverage")
+    default_leverage: int = Field(1, ge=1, le=50, description="Default leverage", alias="defaultLeverage")
+    environment: str = Field("testnet", description="Trading environment: testnet or mainnet")
+
+    class Config:
+        populate_by_name = True
+
+
+class WalletConfigResponse(BaseModel):
+    """Response model for wallet configuration"""
+    success: bool
+    wallet_id: Optional[int] = Field(None, alias="walletId")
+    wallet_address: Optional[str] = Field(None, alias="walletAddress")
+    message: str
+    requires_authorization: Optional[bool] = False
+
+    class Config:
+        populate_by_name = True
+
+
+@router.get("/accounts/{account_id}/wallet")
+def get_account_wallet(
+    account_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get wallet configurations for an AI Trader account (both testnet and mainnet)
+
+    Returns both testnet and mainnet wallet configurations with balance information.
+    """
+    from database.models import HyperliquidWallet, Account
+    from services.hyperliquid_environment import get_global_trading_mode
+
+    try:
+        # Check if account exists
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        # Get all wallets for this account (testnet and mainnet)
+        wallets = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id
+        ).all()
+
+        # Organize wallets by environment
+        testnet_wallet = None
+        mainnet_wallet = None
+
+        for wallet in wallets:
+            wallet_data = {
+                'id': wallet.id,
+                'walletAddress': wallet.wallet_address,
+                'maxLeverage': wallet.max_leverage,
+                'defaultLeverage': wallet.default_leverage,
+                'isActive': wallet.is_active == "true",
+                'createdAt': wallet.created_at.isoformat() if wallet.created_at else None,
+                'updatedAt': wallet.updated_at.isoformat() if wallet.updated_at else None,
+                'environment': wallet.environment,
+                'keyType': getattr(wallet, 'key_type', 'private_key') or 'private_key',
+                'masterWalletAddress': getattr(wallet, 'master_wallet_address', None),
+                'agentValidUntil': wallet.agent_valid_until.isoformat() if getattr(wallet, 'agent_valid_until', None) else None,
+            }
+
+            # Try to get balance for this specific wallet
+            try:
+                # Use override_environment to get client for this wallet's environment
+                client = get_hyperliquid_client(db, account_id, override_environment=wallet.environment)
+                account_state = client.get_account_state(db)
+                wallet_data['balance'] = {
+                    'totalEquity': float(account_state.get('total_equity', 0)),
+                    'availableBalance': float(account_state.get('available_balance', 0)),
+                    'marginUsagePercent': float(account_state.get('margin_usage_percent', 0))
+                }
+            except Exception as e:
+                logger.warning(f"Failed to fetch balance for {wallet.environment} wallet: {e}")
+                wallet_data['balance'] = None
+
+            if wallet.environment == 'testnet':
+                testnet_wallet = wallet_data
+            elif wallet.environment == 'mainnet':
+                mainnet_wallet = wallet_data
+
+        # Get global trading mode
+        trading_mode = get_global_trading_mode(db)
+
+        return {
+            'success': True,
+            'configured': testnet_wallet is not None or mainnet_wallet is not None,
+            'accountId': account_id,
+            'accountName': account.name,
+            'testnetWallet': testnet_wallet,
+            'mainnetWallet': mainnet_wallet,
+            'globalTradingMode': trading_mode
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get wallets for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get wallet configuration: {str(e)}")
+
+
+@router.post("/accounts/{account_id}/wallet")
+def configure_account_wallet(
+    account_id: int,
+    request: WalletConfigRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Configure or update wallet for an AI Trader account
+
+    Creates a new wallet record or updates existing one for the specified environment.
+    The private key will be encrypted before storage.
+    """
+    from database.models import HyperliquidWallet, Account
+    from utils.encryption import encrypt_private_key
+    from eth_account import Account as EthAccount
+
+    try:
+        # Validate environment
+        if request.environment not in ['testnet', 'mainnet']:
+            raise HTTPException(status_code=400, detail="Environment must be 'testnet' or 'mainnet'")
+
+        # Check if account exists
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        # Validate and parse private key
+        private_key = request.private_key.strip()
+        if private_key.startswith('0x'):
+            private_key = private_key[2:]
+
+        if len(private_key) != 64:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid private key format. Must be 64 hex characters (with or without 0x prefix)"
+            )
+
+        # Parse wallet address from private key
+        try:
+            eth_account = EthAccount.from_key('0x' + private_key)
+            wallet_address = eth_account.address
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid private key: {str(e)}")
+
+        # Encrypt private key
+        try:
+            encrypted_key = encrypt_private_key('0x' + private_key)
+        except Exception as e:
+            logger.error(f"Failed to encrypt private key: {e}")
+            raise HTTPException(status_code=500, detail="Failed to encrypt private key")
+
+        # Check if wallet already exists for this account and environment
+        existing_wallet = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id,
+            HyperliquidWallet.environment == request.environment
+        ).first()
+
+        if existing_wallet:
+            # Update existing wallet
+            existing_wallet.private_key_encrypted = encrypted_key
+            existing_wallet.wallet_address = wallet_address
+            existing_wallet.max_leverage = request.max_leverage
+            existing_wallet.default_leverage = request.default_leverage
+            existing_wallet.is_active = "true"
+
+            db.commit()
+            db.refresh(existing_wallet)
+
+            # Clear cached trading client since credentials changed
+            clear_trading_client_cache(account_id=account_id, environment=request.environment)
+
+            logger.info(f"Updated {request.environment} wallet for account {account.name} (ID: {account_id}), address: {wallet_address}")
+
+            # Builder binding for mainnet wallet after successful save
+            requires_auth = False
+            if request.environment == 'mainnet':
+                try:
+                    print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
+                    from config.settings import HYPERLIQUID_BUILDER_CONFIG
+                    import requests
+
+                    # Check authorization status
+                    response = requests.post(
+                        "https://api.hyperliquid.xyz/info",
+                        json={
+                            "type": "maxBuilderFee",
+                            "user": wallet_address,
+                            "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
+                        },
+                        timeout=10
+                    )
+                    max_fee = response.json()
+
+                    if max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
+                        print(f"[BUILDER_AUTH] Not authorized (max_fee={max_fee} < required={HYPERLIQUID_BUILDER_CONFIG.builder_fee}), triggering authorization")
+
+                        # Execute authorization
+                        client = get_hyperliquid_client(db, account_id, override_environment="mainnet")
+                        fee_percentage = f"{HYPERLIQUID_BUILDER_CONFIG.builder_fee / 10 / 100}%"
+                        result = client.sdk_exchange.approve_builder_fee(
+                            HYPERLIQUID_BUILDER_CONFIG.builder_address,
+                            fee_percentage
+                        )
+
+                        # Check if authorization failed
+                        is_success = not (isinstance(result, dict) and result.get('status') == 'err')
+                        if is_success:
+                            print(f"[BUILDER_AUTH] Authorization completed for account {account_id}: {result}")
+                        else:
+                            print(f"[BUILDER_AUTH] Authorization FAILED for account {account_id}: {result}")
+                            requires_auth = True
+                    else:
+                        print(f"[BUILDER_AUTH] Already authorized for account {account_id} (max_fee={max_fee})")
+                except Exception as e:
+                    print(f"[BUILDER_AUTH] Authorization failed for account {account_id}: {type(e).__name__}: {e}")
+                    requires_auth = True
+
+            return WalletConfigResponse(
+                success=True,
+                wallet_id=existing_wallet.id,
+                wallet_address=wallet_address,
+                message=f"{request.environment.capitalize()} wallet updated for {account.name}",
+                requires_authorization=requires_auth
+            )
+        else:
+            # Create new wallet
+            new_wallet = HyperliquidWallet(
+                account_id=account_id,
+                environment=request.environment,
+                private_key_encrypted=encrypted_key,
+                wallet_address=wallet_address,
+                max_leverage=request.max_leverage,
+                default_leverage=request.default_leverage,
+                is_active="true"
+            )
+
+            db.add(new_wallet)
+            db.commit()
+            db.refresh(new_wallet)
+
+            # Clear cached trading client (in case there was an old cached client)
+            clear_trading_client_cache(account_id=account_id, environment=request.environment)
+
+            logger.info(f"Created {request.environment} wallet for account {account.name} (ID: {account_id}), address: {wallet_address}")
+
+            # Builder binding for mainnet wallet after successful save
+            requires_auth = False
+            if request.environment == 'mainnet':
+                try:
+                    print(f"[BUILDER_AUTH] Checking authorization after wallet save for account {account_id}, wallet={wallet_address}")
+                    from config.settings import HYPERLIQUID_BUILDER_CONFIG
+                    import requests
+
+                    # Check authorization status
+                    response = requests.post(
+                        "https://api.hyperliquid.xyz/info",
+                        json={
+                            "type": "maxBuilderFee",
+                            "user": wallet_address,
+                            "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
+                        },
+                        timeout=10
+                    )
+                    max_fee = response.json()
+
+                    if max_fee < HYPERLIQUID_BUILDER_CONFIG.builder_fee:
+                        print(f"[BUILDER_AUTH] Not authorized (max_fee={max_fee} < required={HYPERLIQUID_BUILDER_CONFIG.builder_fee}), triggering authorization")
+
+                        # Execute authorization
+                        client = get_hyperliquid_client(db, account_id, override_environment="mainnet")
+                        fee_percentage = f"{HYPERLIQUID_BUILDER_CONFIG.builder_fee / 10 / 100}%"
+                        result = client.sdk_exchange.approve_builder_fee(
+                            HYPERLIQUID_BUILDER_CONFIG.builder_address,
+                            fee_percentage
+                        )
+
+                        # Check if authorization failed
+                        is_success = not (isinstance(result, dict) and result.get('status') == 'err')
+                        if is_success:
+                            print(f"[BUILDER_AUTH] Authorization completed for account {account_id}: {result}")
+                        else:
+                            print(f"[BUILDER_AUTH] Authorization FAILED for account {account_id}: {result}")
+                            requires_auth = True
+                    else:
+                        print(f"[BUILDER_AUTH] Already authorized for account {account_id} (max_fee={max_fee})")
+                except Exception as e:
+                    print(f"[BUILDER_AUTH] Authorization failed for account {account_id}: {type(e).__name__}: {e}")
+                    requires_auth = True
+
+            return WalletConfigResponse(
+                success=True,
+                wallet_id=new_wallet.id,
+                wallet_address=wallet_address,
+                message=f"{request.environment.capitalize()} wallet configured for {account.name}",
+                requires_authorization=requires_auth
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to configure wallet for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to configure wallet: {str(e)}")
+
+
+@router.delete("/accounts/{account_id}/wallet")
+def delete_account_wallet(
+    account_id: int,
+    environment: str = Query(..., pattern="^(testnet|mainnet)$", description="Environment to delete (testnet or mainnet)"),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete wallet configuration for a specific environment
+
+    Deletes the testnet or mainnet wallet for an AI Trader account.
+    The other wallet (if exists) will remain configured.
+
+    Query Parameters:
+    - environment: Which wallet to delete ('testnet' or 'mainnet')
+    """
+    from database.models import HyperliquidWallet, Account
+
+    try:
+        # Check if account exists
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        # Find wallet for specified environment
+        wallet = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id,
+            HyperliquidWallet.environment == environment
+        ).first()
+
+        if not wallet:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No {environment} wallet configured for account {account_id}"
+            )
+
+        # Delete wallet
+        wallet_address = wallet.wallet_address
+        db.delete(wallet)
+        db.commit()
+
+        logger.warning(
+            f"Deleted {environment} wallet ({wallet_address}) for account {account.name} (ID: {account_id})"
+        )
+
+        return {
+            'success': True,
+            'accountId': account_id,
+            'accountName': account.name,
+            'environment': environment,
+            'message': f'{environment.capitalize()} wallet deleted'
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to delete {environment} wallet for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to delete wallet: {str(e)}")
+
+
+class TestWalletRequest(BaseModel):
+    environment: Optional[str] = None
+
+
+@router.post("/accounts/{account_id}/wallet/test")
+def test_wallet_connection(
+    account_id: int,
+    body: TestWalletRequest = TestWalletRequest(),
+    db: Session = Depends(get_db)
+):
+    """
+    Test wallet connection to Hyperliquid
+
+    Validates that the wallet can connect to the exchange and fetch account state.
+    Uses the provided environment, or falls back to global trading_mode.
+    """
+    from database.models import Account
+
+    try:
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        env = body.environment
+        if env and env not in ("testnet", "mainnet"):
+            raise HTTPException(status_code=400, detail="environment must be 'testnet' or 'mainnet'")
+        if not env:
+            from services.hyperliquid_environment import get_global_trading_mode
+            env = get_global_trading_mode(db)
+
+        try:
+            client = get_hyperliquid_client(db, account_id, override_environment=env)
+            account_state = client.get_account_state(db)
+
+            return {
+                'success': True,
+                'accountId': account_id,
+                'accountName': account.name,
+                'environment': env,
+                'walletAddress': client.wallet_address,
+                'connection': 'successful',
+                'accountState': {
+                    'totalEquity': float(account_state.get('total_equity', 0)),
+                    'availableBalance': float(account_state.get('available_balance', 0)),
+                    'marginUsage': float(account_state.get('margin_usage_percent', 0))
+                }
+            }
+
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            return {
+                'success': False,
+                'accountId': account_id,
+                'accountName': account.name,
+                'environment': env,
+                'connection': 'failed',
+                'error': str(e)
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to test wallet connection for account {account_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to test connection: {str(e)}")
+
+
+# ========== Global Trading Mode Management ==========
+
+class TradingModeRequest(BaseModel):
+    """Request model for trading mode update"""
+    mode: str = Field(..., pattern="^(testnet|mainnet)$", description="Trading environment mode")
+
+
+@router.get("/trading-mode")
+def get_trading_mode(db: Session = Depends(get_db)):
+    """
+    Get global Hyperliquid trading mode
+
+    Returns the current trading environment (testnet or mainnet) that all AI Traders use.
+    """
+    from services.hyperliquid_environment import get_global_trading_mode
+
+    try:
+        mode = get_global_trading_mode(db)
+
+        return {
+            'success': True,
+            'mode': mode,
+            'description': 'Testnet (paper trading)' if mode == 'testnet' else 'Mainnet (real funds)'
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get trading mode: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get trading mode: {str(e)}")
+
+
+@router.post("/trading-mode")
+def set_trading_mode(
+    request: TradingModeRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Set global Hyperliquid trading mode
+
+    WARNING: Switching to mainnet will use real funds for all AI Traders.
+    This change affects all active AI Traders immediately.
+    """
+    from database.models import SystemConfig
+
+    try:
+        # Check if config exists
+        config = db.query(SystemConfig).filter(
+            SystemConfig.key == "hyperliquid_trading_mode"
+        ).first()
+
+        old_mode = config.value if config else "testnet"
+        new_mode = request.mode
+
+        if old_mode == new_mode:
+            return {
+                'success': True,
+                'mode': new_mode,
+                'changed': False,
+                'message': f'Trading mode already set to {new_mode}'
+            }
+
+        # Update or create config
+        if config:
+            config.value = new_mode
+        else:
+            config = SystemConfig(
+                key="hyperliquid_trading_mode",
+                value=new_mode,
+                description="Global Hyperliquid trading environment: 'testnet' or 'mainnet'"
+            )
+            db.add(config)
+
+        db.commit()
+
+        logger.warning(f"GLOBAL TRADING MODE CHANGED: {old_mode} -> {new_mode}")
+
+        # Clear all Hyperliquid caches when environment changes
+        # This ensures fresh data is fetched from the new environment
+        from services.hyperliquid_cache import clear_all_caches
+        clear_all_caches()
+        logger.info("Cleared all Hyperliquid caches after trading mode switch")
+
+        return {
+            'success': True,
+            'mode': new_mode,
+            'changed': True,
+            'oldMode': old_mode,
+            'message': f'Trading mode switched from {old_mode} to {new_mode}'
+        }
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to set trading mode: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to set trading mode: {str(e)}")
+
+
+
+
+@router.get("/wallets/all")
+def get_all_wallets(db: Session = Depends(get_db)):
+    """
+    Get all Hyperliquid wallets (both testnet and mainnet) across all AI Trader accounts
+
+    Used by the Trade page wallet selector to display all available wallets
+    regardless of the current global trading mode.
+
+    Returns:
+        List of wallet objects with account information, sorted by account name and environment
+    """
+    from database.models import HyperliquidWallet, Account
+
+    try:
+        wallets = db.query(HyperliquidWallet, Account).join(
+            Account, HyperliquidWallet.account_id == Account.id
+        ).filter(
+            Account.is_active == "true"
+        ).order_by(
+            Account.name.asc(),
+            HyperliquidWallet.environment.asc()
+        ).all()
+
+        result = []
+        for w, a in wallets:
+            key_type = getattr(w, 'key_type', 'private_key') or 'private_key'
+            # For agent_key mode, display master wallet address (the one users recognize)
+            display_address = w.master_wallet_address if key_type == "agent_key" and w.master_wallet_address else w.wallet_address
+            result.append({
+                "wallet_id": w.id,
+                "account_id": w.account_id,
+                "account_name": a.name,
+                "model": a.model,
+                "wallet_address": display_address,
+                "environment": w.environment,
+                "is_active": w.is_active == "true",
+                "max_leverage": w.max_leverage,
+                "default_leverage": w.default_leverage
+            })
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed to get all wallets: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get wallets: {str(e)}")
+
+
+# ============================================================================
+# Agent Wallet Endpoints
+# ============================================================================
+
+class AgentWalletUpgradeRequest(BaseModel):
+    """Request to upgrade existing wallet from private_key to agent_key"""
+    environment: str = Field(..., pattern="^(testnet|mainnet)$")
+    agent_name: str = Field("HyperArena", max_length=50, alias="agentName")
+
+    class Config:
+        populate_by_name = True
+
+
+class AgentWalletConfigRequest(BaseModel):
+    """Request to bind a new agent wallet (from Hyperliquid API page)"""
+    agent_private_key: str = Field(..., min_length=64, max_length=66, alias="agentPrivateKey")
+    master_wallet_address: str = Field(..., min_length=42, max_length=42, alias="masterWalletAddress")
+    environment: str = Field(..., pattern="^(testnet|mainnet)$")
+    max_leverage: int = Field(3, ge=1, le=50, alias="maxLeverage")
+    default_leverage: int = Field(1, ge=1, le=50, alias="defaultLeverage")
+
+    class Config:
+        populate_by_name = True
+
+
+def _get_extra_agents(api_url: str, wallet_address: str) -> list:
+    """Query Hyperliquid extraAgents API for a wallet address"""
+    import requests
+    try:
+        resp = requests.post(
+            f"{api_url}/info",
+            json={"type": "extraAgents", "user": wallet_address},
+            timeout=10
+        )
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        logger.warning(f"Failed to query extraAgents for {wallet_address}: {e}")
+        return []
+
+
+def _find_agent_in_extra_agents(extra_agents: list, agent_address: str) -> Optional[dict]:
+    """Find a specific agent in the extraAgents response"""
+    agent_address_lower = agent_address.lower()
+    for agent in extra_agents:
+        if isinstance(agent, dict):
+            addr = agent.get("address", "").lower()
+            if addr == agent_address_lower:
+                return agent
+    return None
+
+
+@router.post("/accounts/{account_id}/wallet/upgrade-to-agent")
+def upgrade_wallet_to_agent(
+    account_id: int,
+    request: AgentWalletUpgradeRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Upgrade an existing private_key wallet to agent_key mode.
+
+    Uses the stored master private key to call approve_agent on-chain,
+    then replaces the stored key with the agent key.
+    """
+    from database.models import HyperliquidWallet, Account
+    from utils.encryption import encrypt_private_key, decrypt_private_key
+    from eth_account import Account as EthAccount
+
+    try:
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        wallet = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id,
+            HyperliquidWallet.environment == request.environment,
+        ).first()
+        if not wallet:
+            raise HTTPException(status_code=404, detail=f"No {request.environment} wallet found")
+
+        key_type = getattr(wallet, 'key_type', 'private_key') or 'private_key'
+        if key_type == "agent_key":
+            raise HTTPException(status_code=400, detail="Wallet is already using agent key mode")
+
+        # Decrypt master private key
+        master_private_key = decrypt_private_key(wallet.private_key_encrypted)
+        master_address = wallet.wallet_address
+
+        # Create SDK Exchange with master key
+        api_url = "https://api.hyperliquid-testnet.xyz" if request.environment == "testnet" else "https://api.hyperliquid.xyz"
+
+        from hyperliquid.exchange import Exchange
+        eth_wallet = EthAccount.from_key(master_private_key)
+        # Pass empty metadata to avoid SDK spot token parsing error on testnet
+        # approve_agent doesn't need coin mappings
+        sdk_exchange = Exchange(
+            wallet=eth_wallet,
+            base_url=api_url,
+            meta={"universe": []},
+            spot_meta={"tokens": [], "universe": []},
+        )
+
+        # Approve agent on-chain
+        agent_name = request.agent_name or f"HyperArena-{account_id}"
+        result = sdk_exchange.approve_agent(name=agent_name)
+
+        if not result or len(result) < 2:
+            raise HTTPException(status_code=500, detail=f"approve_agent failed: {result}")
+
+        approve_result, agent_private_key = result
+        if isinstance(approve_result, dict) and approve_result.get("status") == "err":
+            raise HTTPException(status_code=500, detail=f"approve_agent error: {approve_result}")
+
+        # Derive agent address
+        agent_eth_account = EthAccount.from_key(agent_private_key)
+        agent_address = agent_eth_account.address.lower()
+
+        # Query validUntil
+        extra_agents = _get_extra_agents(api_url, master_address)
+        agent_info = _find_agent_in_extra_agents(extra_agents, agent_address)
+        valid_until = None
+        if agent_info and "validUntil" in agent_info:
+            valid_until_ms = agent_info["validUntil"]
+            valid_until = datetime.fromtimestamp(valid_until_ms / 1000, tz=timezone.utc)
+
+        # Update wallet record
+        wallet.private_key_encrypted = encrypt_private_key(agent_private_key)
+        wallet.wallet_address = agent_address
+        wallet.key_type = "agent_key"
+        wallet.master_wallet_address = master_address
+        wallet.agent_valid_until = valid_until
+
+        db.commit()
+
+        # Clear trading client cache
+        clear_trading_client_cache(account_id=account_id, environment=request.environment)
+
+        return {
+            "success": True,
+            "message": f"Wallet upgraded to agent key mode",
+            "agentAddress": agent_address,
+            "masterWalletAddress": master_address,
+            "agentName": agent_name,
+            "validUntil": valid_until.isoformat() if valid_until else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upgrade wallet to agent: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Agent upgrade failed: {str(e)}")
+
+
+@router.post("/accounts/{account_id}/wallet/agent")
+def configure_agent_wallet(
+    account_id: int,
+    request: AgentWalletConfigRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Bind an agent wallet created via Hyperliquid API page.
+
+    The user creates the agent wallet on Hyperliquid's website and provides
+    the agent private key + master wallet address here.
+    """
+    from database.models import HyperliquidWallet, Account
+    from utils.encryption import encrypt_private_key
+    from eth_account import Account as EthAccount
+
+    try:
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        # Validate and normalize agent private key
+        agent_key = request.agent_private_key.strip()
+        if not agent_key.startswith('0x'):
+            agent_key = '0x' + agent_key
+
+        # Derive agent address
+        try:
+            agent_eth_account = EthAccount.from_key(agent_key)
+            agent_address = agent_eth_account.address.lower()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid agent private key: {e}")
+
+        # Validate master wallet address format
+        master_address = request.master_wallet_address.strip().lower()
+        if not master_address.startswith('0x') or len(master_address) != 42:
+            raise HTTPException(status_code=400, detail="Invalid master wallet address format")
+
+        # Verify agent is authorized by querying extraAgents
+        api_url = "https://api.hyperliquid-testnet.xyz" if request.environment == "testnet" else "https://api.hyperliquid.xyz"
+        extra_agents = _get_extra_agents(api_url, master_address)
+        agent_info = _find_agent_in_extra_agents(extra_agents, agent_address)
+
+        valid_until = None
+        if agent_info and "validUntil" in agent_info:
+            valid_until_ms = agent_info["validUntil"]
+            valid_until = datetime.fromtimestamp(valid_until_ms / 1000, tz=timezone.utc)
+
+        if not agent_info:
+            logger.warning(f"Agent {agent_address} not found in extraAgents for {master_address}. Proceeding anyway.")
+
+        # Encrypt agent private key
+        encrypted_key = encrypt_private_key(agent_key)
+
+        # Create or update wallet record
+        existing_wallet = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id,
+            HyperliquidWallet.environment == request.environment,
+        ).first()
+
+        if existing_wallet:
+            existing_wallet.private_key_encrypted = encrypted_key
+            existing_wallet.wallet_address = agent_address
+            existing_wallet.key_type = "agent_key"
+            existing_wallet.master_wallet_address = master_address
+            existing_wallet.agent_valid_until = valid_until
+            existing_wallet.max_leverage = request.max_leverage
+            existing_wallet.default_leverage = request.default_leverage
+            existing_wallet.is_active = "true"
+            wallet_id = existing_wallet.id
+        else:
+            new_wallet = HyperliquidWallet(
+                account_id=account_id,
+                environment=request.environment,
+                private_key_encrypted=encrypted_key,
+                wallet_address=agent_address,
+                key_type="agent_key",
+                master_wallet_address=master_address,
+                agent_valid_until=valid_until,
+                max_leverage=request.max_leverage,
+                default_leverage=request.default_leverage,
+                is_active="true"
+            )
+            db.add(new_wallet)
+            db.flush()
+            wallet_id = new_wallet.id
+
+        db.commit()
+
+        # Clear trading client cache
+        clear_trading_client_cache(account_id=account_id, environment=request.environment)
+
+        # Check builder fee authorization for mainnet (using master wallet address)
+        builder_fee_authorized = True
+        if request.environment == 'mainnet':
+            try:
+                from config.settings import HYPERLIQUID_BUILDER_CONFIG
+                import requests as http_requests
+                resp = http_requests.post(
+                    "https://api.hyperliquid.xyz/info",
+                    json={
+                        "type": "maxBuilderFee",
+                        "user": master_address,
+                        "builder": HYPERLIQUID_BUILDER_CONFIG.builder_address
+                    },
+                    timeout=10
+                )
+                max_fee = resp.json()
+                builder_fee_authorized = max_fee >= HYPERLIQUID_BUILDER_CONFIG.builder_fee
+                print(f"[BUILDER_AUTH] Agent wallet bind: master={master_address[:12]}... maxBuilderFee={max_fee}, authorized={builder_fee_authorized}")
+            except Exception as e:
+                print(f"[BUILDER_AUTH] Failed to check builder fee for agent wallet: {e}")
+
+        return {
+            "success": True,
+            "walletId": wallet_id,
+            "agentAddress": agent_address,
+            "masterWalletAddress": master_address,
+            "validUntil": valid_until.isoformat() if valid_until else None,
+            "message": f"Agent wallet configured for {request.environment}",
+            "builderFeeAuthorized": builder_fee_authorized,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to configure agent wallet: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Agent wallet configuration failed: {str(e)}")
+
+
+@router.get("/accounts/{account_id}/wallet/agent-status")
+def get_agent_wallet_status(
+    account_id: int,
+    environment: str = Query(..., pattern="^(testnet|mainnet)$"),
+    db: Session = Depends(get_db)
+):
+    """Get live agent wallet status including expiration info"""
+    from database.models import HyperliquidWallet, Account
+
+    try:
+        account = db.query(Account).filter(Account.id == account_id, Account.is_deleted != True).first()
+        if not account:
+            raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+        wallet = db.query(HyperliquidWallet).filter(
+            HyperliquidWallet.account_id == account_id,
+            HyperliquidWallet.environment == environment,
+        ).first()
+
+        if not wallet:
+            raise HTTPException(status_code=404, detail=f"No {environment} wallet found")
+
+        key_type = getattr(wallet, 'key_type', 'private_key') or 'private_key'
+        if key_type != "agent_key":
+            return {
+                "success": True,
+                "keyType": "private_key",
+                "message": "Wallet is using legacy private key mode"
+            }
+
+        master_address = wallet.master_wallet_address
+        agent_address = wallet.wallet_address
+
+        # Query live status from Hyperliquid
+        api_url = "https://api.hyperliquid-testnet.xyz" if environment == "testnet" else "https://api.hyperliquid.xyz"
+        extra_agents = _get_extra_agents(api_url, master_address)
+        agent_info = _find_agent_in_extra_agents(extra_agents, agent_address)
+
+        valid_until = None
+        agent_name = None
+        is_expired = True
+
+        if agent_info:
+            agent_name = agent_info.get("name")
+            if "validUntil" in agent_info:
+                valid_until_ms = agent_info["validUntil"]
+                valid_until = datetime.fromtimestamp(valid_until_ms / 1000, tz=timezone.utc)
+                is_expired = datetime.now(timezone.utc) > valid_until
+
+        now = datetime.now(timezone.utc)
+        days_remaining = (valid_until - now).days if valid_until and not is_expired else 0
+
+        return {
+            "success": True,
+            "keyType": "agent_key",
+            "agentAddress": agent_address,
+            "masterWalletAddress": master_address,
+            "agentName": agent_name,
+            "validUntil": valid_until.isoformat() if valid_until else None,
+            "isExpired": is_expired,
+            "daysRemaining": max(0, days_remaining),
+            "found": agent_info is not None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get agent wallet status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get agent status: {str(e)}")
+
+
+@router.get("/wallet-upgrade-check")
+def check_wallet_upgrade_needed(db: Session = Depends(get_db)):
+    """
+    Check which wallets still use legacy private_key mode and should be upgraded.
+    Returns list of wallets that need upgrade (for showing upgrade modal).
+    """
+    from database.models import HyperliquidWallet, Account
+
+    try:
+        wallets = db.query(HyperliquidWallet, Account).join(
+            Account, HyperliquidWallet.account_id == Account.id
+        ).filter(
+            HyperliquidWallet.is_active == "true",
+            Account.is_deleted != True,
+        ).all()
+
+        needs_upgrade = []
+        for wallet, account in wallets:
+            key_type = getattr(wallet, 'key_type', 'private_key') or 'private_key'
+            if key_type == "private_key":
+                needs_upgrade.append({
+                    "accountId": account.id,
+                    "accountName": account.name,
+                    "environment": wallet.environment,
+                    "walletAddress": wallet.wallet_address,
+                })
+
+        return {
+            "success": True,
+            "needsUpgrade": needs_upgrade,
+            "count": len(needs_upgrade),
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to check wallet upgrade: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to check wallet upgrade: {str(e)}")

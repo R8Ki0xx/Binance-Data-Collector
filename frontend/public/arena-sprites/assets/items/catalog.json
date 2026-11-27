@@ -1,0 +1,1038 @@
+[
+  {
+    "id": "door-wood-plain",
+    "label": "Wood Plain Door",
+    "file": "door-wood-plain.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-wood-panels",
+    "label": "Wood Panels Door",
+    "file": "door-wood-panels.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-iron-grid",
+    "label": "Iron Grid Door",
+    "file": "door-iron-grid.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-dark-wood",
+    "label": "Dark Wood Door",
+    "file": "door-dark-wood.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-brown-rustic",
+    "label": "Brown Rustic Door",
+    "file": "door-brown-rustic.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-iron-dark",
+    "label": "Iron Dark Door",
+    "file": "door-iron-dark.png",
+    "w": 64,
+    "h": 68
+  },
+  {
+    "id": "door-double",
+    "label": "Double Door",
+    "file": "door-double.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "door-double-win",
+    "label": "Double Door Window",
+    "file": "door-double-win.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "laptop-0-0",
+    "label": "Laptop Dark Open",
+    "file": "laptop-0-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-0-1",
+    "label": "Laptop Dark Closed",
+    "file": "laptop-0-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-0-2",
+    "label": "Laptop Light Open",
+    "file": "laptop-0-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-0-3",
+    "label": "Laptop Light Closed",
+    "file": "laptop-0-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-1-0",
+    "label": "Laptop Blue Open",
+    "file": "laptop-1-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-1-1",
+    "label": "Laptop Blue Closed",
+    "file": "laptop-1-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-1-2",
+    "label": "Laptop Tan Open",
+    "file": "laptop-1-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-1-3",
+    "label": "Laptop Tan Closed",
+    "file": "laptop-1-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-2-0",
+    "label": "Laptop Black Closed",
+    "file": "laptop-2-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-2-1",
+    "label": "Laptop Gray Closed",
+    "file": "laptop-2-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-2-2",
+    "label": "Laptop Brown Closed",
+    "file": "laptop-2-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-2-3",
+    "label": "Laptop Beige Closed",
+    "file": "laptop-2-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-3-0",
+    "label": "Laptop Navy Closed",
+    "file": "laptop-3-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "laptop-3-1",
+    "label": "Laptop Khaki Closed",
+    "file": "laptop-3-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "tv-off",
+    "label": "TV Off",
+    "file": "tv-off.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "tv-color",
+    "label": "TV Color Bars",
+    "file": "tv-color.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "tv-test",
+    "label": "TV Test Pattern",
+    "file": "tv-test.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "tv-static-1",
+    "label": "TV Static 1",
+    "file": "tv-static-1.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "tv-static-2",
+    "label": "TV Static 2",
+    "file": "tv-static-2.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "tv-static-3",
+    "label": "TV Static 3",
+    "file": "tv-static-3.png",
+    "w": 96,
+    "h": 64
+  },
+  {
+    "id": "coffee-cup",
+    "label": "Coffee Cup",
+    "file": "coffee-cup.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "coffee-maker-1",
+    "label": "Coffee Maker",
+    "file": "coffee-maker-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "coffee-maker-2",
+    "label": "Coffee Maker 2",
+    "file": "coffee-maker-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "copier",
+    "label": "Copy Machine",
+    "file": "copier.png",
+    "w": 64,
+    "h": 64
+  },
+  {
+    "id": "shopping-cart",
+    "label": "Shopping Cart",
+    "file": "shopping-cart.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "water-cooler-1",
+    "label": "Water Cooler",
+    "file": "water-cooler-1.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "water-cooler-2",
+    "label": "Water Cooler 2",
+    "file": "water-cooler-2.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "water-cooler-3",
+    "label": "Water Cooler 3",
+    "file": "water-cooler-3.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "water-cooler-4",
+    "label": "Water Cooler 4",
+    "file": "water-cooler-4.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "bin-0-0",
+    "label": "Bin green 1",
+    "file": "bin-0-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-0-1",
+    "label": "Bin dark 1",
+    "file": "bin-0-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-0-2",
+    "label": "Bin olive 1",
+    "file": "bin-0-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-0-3",
+    "label": "Bin navy 1",
+    "file": "bin-0-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-0-4",
+    "label": "Bin beige 1",
+    "file": "bin-0-4.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-1-0",
+    "label": "Bin green 2",
+    "file": "bin-1-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-1-1",
+    "label": "Bin dark 2",
+    "file": "bin-1-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-1-2",
+    "label": "Bin olive 2",
+    "file": "bin-1-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-1-3",
+    "label": "Bin navy 2",
+    "file": "bin-1-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-1-4",
+    "label": "Bin beige 2",
+    "file": "bin-1-4.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-2-0",
+    "label": "Bin green 3",
+    "file": "bin-2-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-2-1",
+    "label": "Bin dark 3",
+    "file": "bin-2-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-2-2",
+    "label": "Bin olive 3",
+    "file": "bin-2-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-2-3",
+    "label": "Bin navy 3",
+    "file": "bin-2-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-2-4",
+    "label": "Bin beige 3",
+    "file": "bin-2-4.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-3-0",
+    "label": "Bin green 4",
+    "file": "bin-3-0.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-3-1",
+    "label": "Bin dark 4",
+    "file": "bin-3-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-3-2",
+    "label": "Bin olive 4",
+    "file": "bin-3-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-3-3",
+    "label": "Bin navy 4",
+    "file": "bin-3-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "bin-3-4",
+    "label": "Bin beige 4",
+    "file": "bin-3-4.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-1",
+    "label": "Portrait Gold",
+    "file": "portrait-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-2",
+    "label": "Portrait Brown",
+    "file": "portrait-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-3",
+    "label": "Portrait Dark",
+    "file": "portrait-3.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-4",
+    "label": "Portrait Red",
+    "file": "portrait-4.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-5",
+    "label": "Portrait Small 1",
+    "file": "portrait-5.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "portrait-6",
+    "label": "Portrait Small 2",
+    "file": "portrait-6.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "chair-black",
+    "label": "Chair Black",
+    "file": "chair-black.png",
+    "w": 18,
+    "h": 42
+  },
+  {
+    "id": "chair-red",
+    "label": "Chair Red",
+    "file": "chair-red.png",
+    "w": 18,
+    "h": 42
+  },
+  {
+    "id": "stool-black",
+    "label": "Stool Black",
+    "file": "stool-black.png",
+    "w": 18,
+    "h": 42
+  },
+  {
+    "id": "stool-red",
+    "label": "Stool Red",
+    "file": "stool-red.png",
+    "w": 22,
+    "h": 42
+  },
+  {
+    "id": "filing-cabinet-1",
+    "label": "Filing Cabinet",
+    "file": "filing-cabinet-1.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "filing-cabinet-2",
+    "label": "Filing Cabinet 2",
+    "file": "filing-cabinet-2.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "cabinet-dark",
+    "label": "Dark Cabinet",
+    "file": "cabinet-dark.png",
+    "w": 64,
+    "h": 64
+  },
+  {
+    "id": "office-plant",
+    "label": "Office Plant",
+    "file": "office-plant.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "book-stack",
+    "label": "Book Stack",
+    "file": "book-stack.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "colored-books",
+    "label": "Colored Books",
+    "file": "colored-books.png",
+    "w": 64,
+    "h": 32
+  },
+  {
+    "id": "desk-lamp",
+    "label": "Desk Lamp",
+    "file": "desk-lamp.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "robot-arm",
+    "label": "Robot Arm",
+    "file": "robot-arm.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "work-desk",
+    "label": "Work Desk",
+    "file": "work-desk.png",
+    "w": 64,
+    "h": 32
+  },
+  {
+    "id": "desk-top",
+    "label": "Desk Top View",
+    "file": "desk-top.png",
+    "w": 160,
+    "h": 64
+  },
+  {
+    "id": "desk-front",
+    "label": "Desk Front View",
+    "file": "desk-front.png",
+    "w": 160,
+    "h": 64
+  },
+  {
+    "id": "bookshelf-brown-1",
+    "label": "Bookshelf Brown",
+    "file": "bookshelf-brown-1.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "bookshelf-brown-2",
+    "label": "Bookshelf Brown 2",
+    "file": "bookshelf-brown-2.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "bookshelf-green-1",
+    "label": "Bookshelf Green",
+    "file": "bookshelf-green-1.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "bookshelf-green-2",
+    "label": "Bookshelf Green 2",
+    "file": "bookshelf-green-2.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "wardrobe-1",
+    "label": "Wardrobe",
+    "file": "wardrobe-1.png",
+    "w": 64,
+    "h": 80
+  },
+  {
+    "id": "wardrobe-2",
+    "label": "Wardrobe 2",
+    "file": "wardrobe-2.png",
+    "w": 64,
+    "h": 80
+  },
+  {
+    "id": "display-case",
+    "label": "Display Case",
+    "file": "display-case.png",
+    "w": 64,
+    "h": 96
+  },
+  {
+    "id": "china-cabinet",
+    "label": "China Cabinet",
+    "file": "china-cabinet.png",
+    "w": 48,
+    "h": 96
+  },
+  {
+    "id": "glass-cabinet",
+    "label": "Glass Cabinet",
+    "file": "glass-cabinet.png",
+    "w": 48,
+    "h": 96
+  },
+  {
+    "id": "small-cabinet",
+    "label": "Small Cabinet",
+    "file": "small-cabinet.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "plate-rack",
+    "label": "Plate Rack",
+    "file": "plate-rack.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "chair-wood-1",
+    "label": "Wood Chair",
+    "file": "chair-wood-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "chair-wood-2",
+    "label": "Wood Chair 2",
+    "file": "chair-wood-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "chair-gold-1",
+    "label": "Gold Chair",
+    "file": "chair-gold-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "chair-gold-2",
+    "label": "Gold Chair 2",
+    "file": "chair-gold-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "curtain-gold",
+    "label": "Gold Curtain",
+    "file": "curtain-gold.png",
+    "w": 64,
+    "h": 80
+  },
+  {
+    "id": "lamp-table",
+    "label": "Table Lamp",
+    "file": "lamp-table.png",
+    "w": 32,
+    "h": 48
+  },
+  {
+    "id": "lamp-table-2",
+    "label": "Table Lamp 2",
+    "file": "lamp-table-2.png",
+    "w": 32,
+    "h": 48
+  },
+  {
+    "id": "candle",
+    "label": "Candle",
+    "file": "candle.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "torch",
+    "label": "Torch",
+    "file": "torch.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "bed-single",
+    "label": "Single Bed",
+    "file": "bed-single.png",
+    "w": 64,
+    "h": 80
+  },
+  {
+    "id": "bed-double",
+    "label": "Double Bed",
+    "file": "bed-double.png",
+    "w": 128,
+    "h": 64
+  },
+  {
+    "id": "kitchen-counter",
+    "label": "Kitchen Counter",
+    "file": "kitchen-counter.png",
+    "w": 160,
+    "h": 80
+  },
+  {
+    "id": "door-cabinet-1",
+    "label": "Cabinet Door",
+    "file": "door-cabinet-1.png",
+    "w": 64,
+    "h": 48
+  },
+  {
+    "id": "door-cabinet-2",
+    "label": "Cabinet Door 2",
+    "file": "door-cabinet-2.png",
+    "w": 64,
+    "h": 48
+  },
+  {
+    "id": "fireplace",
+    "label": "Fireplace",
+    "file": "fireplace.png",
+    "w": 64,
+    "h": 48
+  },
+  {
+    "id": "bookcase-small",
+    "label": "Small Bookcase",
+    "file": "bookcase-small.png",
+    "w": 64,
+    "h": 48
+  },
+  {
+    "id": "pillar-1",
+    "label": "Pillar",
+    "file": "pillar-1.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "pillar-2",
+    "label": "Pillar 2",
+    "file": "pillar-2.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "floor-lamp-1",
+    "label": "Floor Lamp",
+    "file": "floor-lamp-1.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "floor-lamp-2",
+    "label": "Floor Lamp 2",
+    "file": "floor-lamp-2.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "curtain-long",
+    "label": "Long Curtain",
+    "file": "curtain-long.png",
+    "w": 64,
+    "h": 64
+  },
+  {
+    "id": "curtain-rod",
+    "label": "Curtain Rod",
+    "file": "curtain-rod.png",
+    "w": 64,
+    "h": 64
+  },
+  {
+    "id": "cushion-1",
+    "label": "Cushion",
+    "file": "cushion-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "cushion-2",
+    "label": "Cushion 2",
+    "file": "cushion-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "armchair-1",
+    "label": "Armchair",
+    "file": "armchair-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "armchair-2",
+    "label": "Armchair 2",
+    "file": "armchair-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "sofa-front-1",
+    "label": "Sofa Front",
+    "file": "sofa-front-1.png",
+    "w": 64,
+    "h": 32
+  },
+  {
+    "id": "sofa-front-2",
+    "label": "Sofa Front 2",
+    "file": "sofa-front-2.png",
+    "w": 64,
+    "h": 32
+  },
+  {
+    "id": "sofa-side-1",
+    "label": "Sofa Side",
+    "file": "sofa-side-1.png",
+    "w": 64,
+    "h": 32
+  },
+  {
+    "id": "tree-round",
+    "label": "Round Tree",
+    "file": "tree-round.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "tree-tall",
+    "label": "Tall Tree",
+    "file": "tree-tall.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "bush-small",
+    "label": "Small Bush",
+    "file": "bush-small.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "bush-round",
+    "label": "Round Bush",
+    "file": "bush-round.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "bush-dark",
+    "label": "Dark Bush",
+    "file": "bush-dark.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "tulips",
+    "label": "Tulips",
+    "file": "tulips.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "fern-pot",
+    "label": "Fern Pot",
+    "file": "fern-pot.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "cactus",
+    "label": "Cactus",
+    "file": "cactus.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "flower-pot",
+    "label": "Flower Pot",
+    "file": "flower-pot.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "pot-empty",
+    "label": "Empty Pot",
+    "file": "pot-empty.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "watering-can",
+    "label": "Watering Can",
+    "file": "watering-can.png",
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": "wall-section",
+    "label": "Wall Section",
+    "file": "wall-section.png",
+    "w": 48,
+    "h": 80
+  },
+  {
+    "id": "stone-floor",
+    "label": "Stone Floor",
+    "file": "stone-floor.png",
+    "w": 48,
+    "h": 48
+  },
+  {
+    "id": "shield-1",
+    "label": "Shield",
+    "file": "shield-1.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "shield-2",
+    "label": "Shield 2",
+    "file": "shield-2.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "chest-1",
+    "label": "Chest",
+    "file": "chest-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "rug-red",
+    "label": "Red Rug",
+    "file": "rug-red.png",
+    "w": 48,
+    "h": 32
+  },
+  {
+    "id": "rug-blue",
+    "label": "Blue Rug",
+    "file": "rug-blue.png",
+    "w": 48,
+    "h": 32
+  },
+  {
+    "id": "indoor-plant-1",
+    "label": "Indoor Plant",
+    "file": "indoor-plant-1.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "indoor-plant-2",
+    "label": "Indoor Plant 2",
+    "file": "indoor-plant-2.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "candelabra",
+    "label": "Candelabra",
+    "file": "candelabra.png",
+    "w": 16,
+    "h": 32
+  },
+  {
+    "id": "barrel",
+    "label": "Barrel",
+    "file": "barrel.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "tv-modern-white",
+    "label": "Modern TV White",
+    "file": "tv-modern-white.png",
+    "w": 180,
+    "h": 180
+  },
+  {
+    "id": "tv-modern-empty",
+    "label": "Modern TV Frame",
+    "file": "tv-modern-empty.png",
+    "w": 180,
+    "h": 180
+  },
+  {
+    "id": "scifi-panel-tall",
+    "label": "Sci-fi Panel Tall",
+    "file": "scifi-panel-tall.png",
+    "w": 32,
+    "h": 64
+  },
+  {
+    "id": "scifi-screen-1",
+    "label": "Sci-fi Screen",
+    "file": "scifi-screen-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "scifi-screen-2",
+    "label": "Sci-fi Screen 2",
+    "file": "scifi-screen-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "scifi-console-1",
+    "label": "Sci-fi Console",
+    "file": "scifi-console-1.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "scifi-console-2",
+    "label": "Sci-fi Console 2",
+    "file": "scifi-console-2.png",
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": "scifi-door",
+    "label": "Sci-fi Door",
+    "file": "scifi-door.png",
+    "w": 32,
+    "h": 64
+  }
+]

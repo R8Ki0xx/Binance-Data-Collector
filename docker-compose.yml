@@ -1,0 +1,105 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: hyper-arena-postgres
+    environment:
+      POSTGRES_USER: alpha_user
+      POSTGRES_PASSWORD: alpha_pass
+      POSTGRES_DB: alpha_arena
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alpha_user -d alpha_arena"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Pass through host proxy settings (empty if host has none)
+        http_proxy: ${http_proxy-}
+        https_proxy: ${https_proxy-}
+        HTTP_PROXY: ${HTTP_PROXY-}
+        HTTPS_PROXY: ${HTTPS_PROXY-}
+        ALL_PROXY: ${ALL_PROXY-}
+    container_name: hyper-arena-app
+    environment:
+      # Database connection
+      DATABASE_URL: postgresql://alpha_user:alpha_pass@postgres:5432/alpha_arena
+      SNAPSHOT_DATABASE_URL: postgresql://alpha_user:alpha_pass@postgres:5432/alpha_snapshots
+      # Hyperliquid Builder Fee Configuration
+      HYPERLIQUID_BUILDER_ADDRESS: "0x012E82f81e506b8f0EF69FF719a6AC65822b5924"
+      HYPERLIQUID_BUILDER_FEE: "30"
+      # Binance Broker Configuration
+      BINANCE_BROKER_ID: "tbyPbcd9"
+      # Factor Engine
+      FACTOR_ENGINE_ENABLED: "true"
+      # Hyper Insight login-based integration
+      HYPER_INSIGHT_API_BASE_URL: ${HYPER_INSIGHT_API_BASE_URL:-https://hyper.akooi.com}
+      # Explicitly disable all proxy settings in container
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+      ALL_PROXY: ""
+      NO_PROXY: ""
+      no_proxy: ""
+    ports:
+      - "127.0.0.1:8802:8802"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # ========== Selective Backend Mounts for Hot Reload ==========
+      # Mount individual directories and files to enable hot reload while preserving
+      # the built frontend static files in the container image.
+      #
+      # IMPORTANT: Do NOT mount ./backend:/app/backend as it will override the
+      # /app/backend/static directory that contains the built frontend files,
+      # causing "Frontend not built yet" errors.
+      #
+      # If you add new directories or important Python files under backend/,
+      # remember to add corresponding volume mounts here to enable hot reload.
+
+      # Backend subdirectories
+      - ./backend/api:/app/backend/api
+      - ./backend/backtest:/app/backend/backtest
+      - ./backend/config:/app/backend/config
+      - ./backend/database:/app/backend/database
+      - ./backend/factors:/app/backend/factors
+      - ./backend/program_trader:/app/backend/program_trader
+      - ./backend/repositories:/app/backend/repositories
+      - ./backend/routes:/app/backend/routes
+      - ./backend/schemas:/app/backend/schemas
+      - ./backend/services:/app/backend/services
+      - ./backend/utils:/app/backend/utils
+
+      # Backend root files (frequently modified during development)
+      - ./backend/main.py:/app/backend/main.py
+      - ./backend/models.py:/app/backend/models.py
+
+      # DO NOT mount ./backend/static - it must remain from the Docker image build
+      # ===============================================================
+
+      # Mount logs
+      - ./logs:/app/logs
+      # Mount data for encryption key persistence
+      - app_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  default:
+    name: hyper-arena-network
